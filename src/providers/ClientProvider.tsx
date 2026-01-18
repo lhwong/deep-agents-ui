@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useMemo, ReactNode } from "react";
 import { Client } from "@langchain/langgraph-sdk";
+import { useSession } from "next-auth/react";
 
 interface ClientContextValue {
   client: Client;
@@ -20,15 +21,22 @@ export function ClientProvider({
   deploymentUrl,
   apiKey,
 }: ClientProviderProps) {
+  const { data: session } = useSession();
+  const provider = session?.provider; // "google" or "github"
   const client = useMemo(() => {
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      "X-Api-Key": apiKey,
+      "X-Provider": provider || "",
+    };
+    if (session?.accessToken) {
+      headers["Authorization"] = `Bearer ${session.accessToken}`;
+    }
     return new Client({
       apiUrl: deploymentUrl,
-      defaultHeaders: {
-        "Content-Type": "application/json",
-        "X-Api-Key": apiKey,
-      },
+      defaultHeaders: headers,
     });
-  }, [deploymentUrl, apiKey]);
+  }, [deploymentUrl, apiKey, session?.accessToken]);
 
   const value = useMemo(() => ({ client }), [client]);
 

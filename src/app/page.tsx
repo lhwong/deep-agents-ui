@@ -1,4 +1,5 @@
 "use client";
+import { signOut } from "./actions";
 
 import React, { useState, useEffect, useCallback, Suspense } from "react";
 import { useQueryState } from "nuqs";
@@ -154,6 +155,15 @@ function HomePageInner({
               <SquarePen className="mr-2 h-4 w-4" />
               New Thread
             </Button>
+            <form action={signOut}>
+              <Button
+                variant="outline"
+                size="sm"
+                type="submit"
+              >
+                Logout
+              </Button>
+            </form>
           </div>
         </header>
 

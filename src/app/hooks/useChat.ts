@@ -2,6 +2,7 @@
 
 import { useCallback } from "react";
 import { useStream } from "@langchain/langgraph-sdk/react";
+import { useSession } from "next-auth/react";
 import {
   type Message,
   type Assistant,
@@ -36,6 +37,7 @@ export function useChat({
 }) {
   const [threadId, setThreadId] = useQueryState("threadId");
   const client = useClient();
+  const { data: session } = useSession();
 
   const stream = useStream<StateType>({
     assistantId: activeAssistant?.assistant_id || "",
@@ -63,12 +65,13 @@ export function useChat({
             messages: [...(prev.messages ?? []), newMessage],
           }),
           config: { ...(activeAssistant?.config ?? {}), recursion_limit: 100 },
-        }
+          metadata: { user_id: session?.user?.id },
+        },
       );
       // Update thread list immediately when sending a message
       onHistoryRevalidate?.();
     },
-    [stream, activeAssistant?.config, onHistoryRevalidate]
+    [stream, activeAssistant?.config, onHistoryRevalidate, session?.user?.id],
   );
 
   const runSingleStep = useCallback(
@@ -76,7 +79,7 @@ export function useChat({
       messages: Message[],
       checkpoint?: Checkpoint,
       isRerunningSubagent?: boolean,
-      optimisticMessages?: Message[]
+      optimisticMessages?: Message[],
     ) => {
       if (checkpoint) {
         stream.submit(undefined, {
@@ -92,11 +95,11 @@ export function useChat({
       } else {
         stream.submit(
           { messages },
-          { config: activeAssistant?.config, interruptBefore: ["tools"] }
+          { config: activeAssistant?.config, interruptBefore: ["tools"] },
         );
       }
     },
-    [stream, activeAssistant?.config]
+    [stream, activeAssistant?.config],
   );
 
   const setFiles = useCallback(

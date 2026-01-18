@@ -2,6 +2,7 @@ import useSWRInfinite from "swr/infinite";
 import type { Thread } from "@langchain/langgraph-sdk";
 import { Client } from "@langchain/langgraph-sdk";
 import { getConfig } from "@/lib/config";
+import { useSession } from "next-auth/react";
 
 export interface ThreadItem {
   id: string;
@@ -19,6 +20,7 @@ export function useThreads(props: {
   limit?: number;
 }) {
   const pageSize = props.limit || DEFAULT_PAGE_SIZE;
+  const { data: session } = useSession();
 
   return useSWRInfinite(
     (pageIndex: number, previousPageData: ThreadItem[] | null) => {
@@ -45,6 +47,9 @@ export function useThreads(props: {
         assistantId: config.assistantId,
         apiKey,
         status: props?.status,
+        accessToken: session?.accessToken,
+        userId: session?.user?.id,
+        provider: session?.provider, // "google" or "github"
       };
     },
     async ({
@@ -54,6 +59,9 @@ export function useThreads(props: {
       status,
       pageIndex,
       pageSize,
+      accessToken,
+      userId,
+      provider,
     }: {
       kind: "threads";
       pageIndex: number;
@@ -62,16 +70,28 @@ export function useThreads(props: {
       assistantId: string;
       apiKey: string;
       status?: Thread["status"];
+      accessToken?: string;
+      userId?: string;
+      provider?: string;
     }) => {
+      
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        "X-Api-Key": apiKey,
+        "X-Provider": provider || "", // Send the provider name here
+      };
+      if (accessToken) {
+        headers["Authorization"] = `Bearer ${accessToken}`;
+      }
       const client = new Client({
         apiUrl: deploymentUrl,
-        defaultHeaders: apiKey ? { "X-Api-Key": apiKey } : {},
+        defaultHeaders: headers,
       });
 
       // Check if assistantId is a UUID (deployed) or graph name (local)
       const isUUID =
         /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-          assistantId
+          assistantId,
         );
 
       const threads = await client.threads.search({
@@ -82,7 +102,10 @@ export function useThreads(props: {
         status,
         // Only filter by assistant_id metadata for deployed graphs (UUIDs)
         // Local dev graphs don't set this metadata
-        ...(isUUID ? { metadata: { assistant_id: assistantId } } : {}),
+        metadata: {
+          ...(isUUID ? { assistant_id: assistantId } : {}),
+          user_id: userId
+        },
       });
 
       return threads.map((thread): ThreadItem => {
