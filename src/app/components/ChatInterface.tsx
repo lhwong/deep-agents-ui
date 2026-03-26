@@ -259,7 +259,9 @@ export const ChatInterface = React.memo<ChatInterfaceProps>(({ assistant }) => {
             <>
               {processedMessages.map((data, index) => {
                 const messageUi = ui?.filter(
-                  (u: any) => u.metadata?.message_id === data.message.id
+                  (u: any) =>
+                    !u.metadata?.message_id ||
+                    u.metadata?.message_id === data.message.id
                 );
                 const isLastMessage = index === processedMessages.length - 1;
                 return (

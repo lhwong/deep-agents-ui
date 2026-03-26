@@ -126,7 +126,7 @@ export const ChatMessage = React.memo<ChatMessageProps>(
             <div className="mt-4 flex w-full flex-col">
               {toolCalls.map((toolCall: ToolCall) => {
                 if (toolCall.name === "task") return null;
-                const toolCallGenUiComponent = ui?.find(
+                const toolCallGenUiComponents = ui?.filter(
                   (u) => u.metadata?.tool_call_id === toolCall.id
                 );
                 const actionRequest = actionRequestsMap?.get(toolCall.name);
@@ -135,7 +135,7 @@ export const ChatMessage = React.memo<ChatMessageProps>(
                   <ToolCallBox
                     key={toolCall.id}
                     toolCall={toolCall}
-                    uiComponent={toolCallGenUiComponent}
+                    uiComponents={toolCallGenUiComponents}
                     stream={stream}
                     graphId={graphId}
                     actionRequest={actionRequest}

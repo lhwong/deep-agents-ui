@@ -15,10 +15,11 @@ import { ToolCall, ActionRequest, ReviewConfig } from "@/app/types/types";
 import { cn } from "@/lib/utils";
 import { LoadExternalComponent } from "@langchain/langgraph-sdk/react-ui";
 import { ToolApprovalInterrupt } from "@/app/components/ToolApprovalInterrupt";
+import { ObservablePlot } from "@/app/components/ObservablePlot";
 
 interface ToolCallBoxProps {
   toolCall: ToolCall;
-  uiComponent?: any;
+  uiComponents?: any[];
   stream?: any;
   graphId?: string;
   actionRequest?: ActionRequest;
@@ -30,7 +31,7 @@ interface ToolCallBoxProps {
 export const ToolCallBox = React.memo<ToolCallBoxProps>(
   ({
     toolCall,
-    uiComponent,
+    uiComponents,
     stream,
     graphId,
     actionRequest,
@@ -38,8 +39,9 @@ export const ToolCallBox = React.memo<ToolCallBoxProps>(
     onResume,
     isLoading,
   }) => {
+    const hasUiComponents = !!uiComponents && uiComponents.length > 0;
     const [isExpanded, setIsExpanded] = useState(
-      () => !!uiComponent || !!actionRequest
+      () => hasUiComponents || !!actionRequest
     );
     const [expandedArgs, setExpandedArgs] = useState<Record<string, boolean>>(
       {}
@@ -142,15 +144,18 @@ export const ToolCallBox = React.memo<ToolCallBoxProps>(
 
         {isExpanded && hasContent && (
           <div className="px-4 pb-4">
-            {uiComponent && stream && graphId ? (
-              <div className="mt-4">
-                <LoadExternalComponent
-                  key={uiComponent.id}
-                  stream={stream}
-                  message={uiComponent}
-                  namespace={graphId}
-                  meta={{ status, args, result: result ?? "No Result Yet" }}
-                />
+            {hasUiComponents && stream && graphId ? (
+              <div className="mt-4 flex flex-col gap-4">
+                {uiComponents!.map((uiComp) => (
+                  <LoadExternalComponent
+                    key={uiComp.id}
+                    stream={stream}
+                    message={uiComp}
+                    namespace={graphId}
+                    meta={{ status, args, result: result ?? "No Result Yet" }}
+                    components={{ observable_plot: ObservablePlot as React.FunctionComponent }}
+                  />
+                ))}
               </div>
             ) : actionRequest && onResume ? (
               // Show tool approval UI when there's an action request but no GenUI
