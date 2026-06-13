@@ -155,7 +155,7 @@ export function useThreads(props: {
       revalidateFirstPage: true,
       revalidateOnFocus: true,
       onError: (err: any) => {
-        if (err?.response?.status === 401) {
+        if (err?.status === 401) {
           signOut({ callbackUrl: "/login" });
         }
       },

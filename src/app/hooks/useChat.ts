@@ -51,7 +51,7 @@ export function useChat({
     // Revalidate thread list when stream finishes, errors, or creates new thread
     onFinish: onHistoryRevalidate,
     onError: (err) => {
-      if ((err as any)?.response?.status === 401) {
+      if ((err as any)?.status === 401) {
         signOut({ callbackUrl: "/login" });
       }
       onHistoryRevalidate?.();
