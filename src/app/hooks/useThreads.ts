@@ -2,7 +2,7 @@ import useSWRInfinite from "swr/infinite";
 import type { Thread } from "@langchain/langgraph-sdk";
 import { Client } from "@langchain/langgraph-sdk";
 import { getConfig } from "@/lib/config";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 
 export interface ThreadItem {
   id: string;
@@ -154,6 +154,11 @@ export function useThreads(props: {
     {
       revalidateFirstPage: true,
       revalidateOnFocus: true,
+      onError: (err: any) => {
+        if (err?.response?.status === 401) {
+          signOut({ callbackUrl: "/login" });
+        }
+      },
     }
   );
 }

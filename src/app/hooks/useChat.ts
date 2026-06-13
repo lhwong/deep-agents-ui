@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 import { useStream } from "@langchain/langgraph-sdk/react";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import {
   type Message,
   type Assistant,
@@ -50,7 +50,12 @@ export function useChat({
     fetchStateHistory: true,
     // Revalidate thread list when stream finishes, errors, or creates new thread
     onFinish: onHistoryRevalidate,
-    onError: onHistoryRevalidate,
+    onError: (err) => {
+      if ((err as any)?.response?.status === 401) {
+        signOut({ callbackUrl: "/login" });
+      }
+      onHistoryRevalidate?.();
+    },
     onCreated: onHistoryRevalidate,
     experimental_thread: thread,
   });
@@ -66,6 +71,7 @@ export function useChat({
           }),
           config: { ...(activeAssistant?.config ?? {}), recursion_limit: 100 },
           metadata: { user_id: session?.user?.id },
+          streamSubgraphs: true,
         },
       );
       // Update thread list immediately when sending a message
@@ -88,6 +94,7 @@ export function useChat({
             : {}),
           config: activeAssistant?.config,
           checkpoint: checkpoint,
+          streamSubgraphs: true,
           ...(isRerunningSubagent
             ? { interruptAfter: ["tools"] }
             : { interruptBefore: ["tools"] }),
@@ -95,7 +102,7 @@ export function useChat({
       } else {
         stream.submit(
           { messages },
-          { config: activeAssistant?.config, interruptBefore: ["tools"] },
+          { config: activeAssistant?.config, interruptBefore: ["tools"], streamSubgraphs: true },
         );
       }
     },
@@ -119,6 +126,7 @@ export function useChat({
           ...(activeAssistant?.config || {}),
           recursion_limit: 100,
         },
+        streamSubgraphs: true,
         ...(hasTaskToolCall
           ? { interruptAfter: ["tools"] }
           : { interruptBefore: ["tools"] }),

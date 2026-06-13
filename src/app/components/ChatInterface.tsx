@@ -257,13 +257,41 @@ export const ChatInterface = React.memo<ChatInterfaceProps>(({ assistant }) => {
             </div>
           ) : (
             <>
-              {processedMessages.map((data, index) => {
-                const messageUi = ui?.filter(
-                  (u: any) =>
-                    !u.metadata?.message_id ||
-                    u.metadata?.message_id === data.message.id
-                );
+              {(() => {
+                // Assign orphaned UI items (no message_id) to AI messages positionally.
+                // GEX charts (id: gex_*) → sequentially to measurement-agent task calls.
+                // P&L charts (id: chart_cumulative_pnl_*) → last broker-agent task call.
+                // Others → last message.
+                const orphanedUi = (ui ?? []).filter((u: any) => !u.metadata?.message_id);
+                const measurementMsgIndices: number[] = [];
+                const brokerMsgIndices: number[] = [];
+                processedMessages.forEach((d, idx) => {
+                  d.toolCalls.forEach((tc: any) => {
+                    if (tc.name === "task") {
+                      if (tc.args?.subagent_type === "measurement-agent") measurementMsgIndices.push(idx);
+                      if (tc.args?.subagent_type === "broker-agent") brokerMsgIndices.push(idx);
+                    }
+                  });
+                });
+                const gexItems = orphanedUi.filter((u: any) => u.id?.startsWith("gex_"));
+                const pnlItems = orphanedUi.filter((u: any) => u.id?.startsWith("chart_cumulative_pnl"));
+                const otherItems = orphanedUi.filter((u: any) => !u.id?.startsWith("gex_") && !u.id?.startsWith("chart_cumulative_pnl"));
+                const uiForIdx = new Map<number, any[]>();
+                const addUi = (idx: number | undefined, item: any) => {
+                  const key = idx ?? processedMessages.length - 1;
+                  if (!uiForIdx.has(key)) uiForIdx.set(key, []);
+                  uiForIdx.get(key)!.push(item);
+                };
+                gexItems.forEach((item, i) => addUi(measurementMsgIndices[i], item));
+                pnlItems.forEach((item) => addUi(brokerMsgIndices[brokerMsgIndices.length - 1], item));
+                otherItems.forEach((item) => addUi(processedMessages.length - 1, item));
+
+                return processedMessages.map((data, index) => {
                 const isLastMessage = index === processedMessages.length - 1;
+                const messageUi = [
+                  ...(uiForIdx.get(index) ?? []),
+                  ...(ui ?? []).filter((u: any) => u.metadata?.message_id === data.message.id),
+                ];
                 return (
                   <ChatMessage
                     key={data.message.id}
@@ -282,7 +310,8 @@ export const ChatInterface = React.memo<ChatInterfaceProps>(({ assistant }) => {
                     graphId={assistant?.graph_id}
                   />
                 );
-              })}
+              });
+              })()}
             </>
           )}
         </div>

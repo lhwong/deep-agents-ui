@@ -4,6 +4,8 @@ import React, { useMemo, useState, useCallback } from "react";
 import { SubAgentIndicator } from "@/app/components/SubAgentIndicator";
 import { ToolCallBox } from "@/app/components/ToolCallBox";
 import { MarkdownContent } from "@/app/components/MarkdownContent";
+import { LoadExternalComponent } from "@langchain/langgraph-sdk/react-ui";
+import { ObservablePlot } from "@/app/components/ObservablePlot";
 import type {
   SubAgent,
   ToolCall,
@@ -97,6 +99,35 @@ export const ChatMessage = React.memo<ChatMessageProps>(
             isUser ? "max-w-[70%]" : "w-full"
           )}
         >
+          {!isUser && stream && graphId && (() => {
+            const matchedIds = new Set(toolCalls.map((t) => t.id));
+            const seen = new Set<string>();
+            const orphanedUi = ui?.filter(
+              (u) => {
+                if (seen.has(u.id)) return false;
+                seen.add(u.id);
+                // Render UI that matches a parent-level tool call ID, OR has no
+                // tool_call_id at all (forwarded from a subagent where the internal
+                // tool call ID has no counterpart in the parent message list).
+                return !u.metadata?.tool_call_id || matchedIds.has(u.metadata.tool_call_id);
+              }
+            );
+            if (!orphanedUi?.length) return null;
+            return (
+              <div className="mt-4 flex flex-col gap-4">
+                {orphanedUi.map((uiComp: any) => (
+                  <LoadExternalComponent
+                    key={uiComp.id}
+                    stream={stream}
+                    message={uiComp}
+                    namespace={graphId}
+                    meta={{}}
+                    components={{ observable_plot: ObservablePlot as React.FunctionComponent }}
+                  />
+                ))}
+              </div>
+            );
+          })()}
           {hasContent && (
             <div className={cn("relative flex items-end gap-0")}>
               <div
@@ -126,16 +157,13 @@ export const ChatMessage = React.memo<ChatMessageProps>(
             <div className="mt-4 flex w-full flex-col">
               {toolCalls.map((toolCall: ToolCall) => {
                 if (toolCall.name === "task") return null;
-                const toolCallGenUiComponents = ui?.filter(
-                  (u) => u.metadata?.tool_call_id === toolCall.id
-                );
                 const actionRequest = actionRequestsMap?.get(toolCall.name);
                 const reviewConfig = reviewConfigsMap?.get(toolCall.name);
                 return (
                   <ToolCallBox
                     key={toolCall.id}
                     toolCall={toolCall}
-                    uiComponents={toolCallGenUiComponents}
+                    uiComponents={[]}
                     stream={stream}
                     graphId={graphId}
                     actionRequest={actionRequest}

@@ -132,7 +132,13 @@ export function ThreadList({
   });
 
   const flattened = useMemo(() => {
-    return threads.data?.flat() ?? [];
+    const all = threads.data?.flat() ?? [];
+    const seen = new Set<string>();
+    return all.filter((t) => {
+      if (seen.has(t.id)) return false;
+      seen.add(t.id);
+      return true;
+    });
   }, [threads.data]);
 
   const isLoadingMore =
