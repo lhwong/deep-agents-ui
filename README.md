@@ -91,3 +91,28 @@ You can also turn off Debug Mode to run the full agent end-to-end.
 If the term "Deep Agents" is new to you, check out these videos!
 [What are Deep Agents?](https://www.youtube.com/watch?v=433SmtTc0TA)
 [Implementing Deep Agents](https://www.youtube.com/watch?v=TTMYJAw5tiA&t=701s)
+
+
+
+
+# Build and push via Cloud Build
+gcloud builds submit \
+  --tag us-central1-docker.pkg.dev/alpha-499407/alpha-repo/deep-agents-ui:latest \
+  --project alpha-499407
+
+# Deploy to Cloud Run (all auth secrets as runtime env vars)
+gcloud run deploy deep-agents-ui \
+  --image us-central1-docker.pkg.dev/alpha-499407/alpha-repo/deep-agents-ui:latest \
+  --platform managed \
+  --region us-central1 \
+  --allow-unauthenticated \
+  --project alpha-499407 \
+  --set-env-vars "AUTH_GOOGLE_ID=...,AUTH_GOOGLE_SECRET=...,AUTH_SECRET=...,AUTH_GITHUB_ID=...,AUTH_GITHUB_SECRET=..."
+If NEXT_PUBLIC_LANGSMITH_API_KEY needs to be baked in at build time, pass it as a build arg:
+
+
+gcloud builds submit \
+  --tag ... \
+  --project alpha-499407 \
+  --substitutions "_LANGSMITH_KEY=lsv2_pt_..." \
+  --build-arg "NEXT_PUBLIC_LANGSMITH_API_KEY=$_LANGSMITH_KEY"
