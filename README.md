@@ -138,7 +138,9 @@ gcloud run deploy deep-agents-ui \
   --region us-central1 \
   --allow-unauthenticated \
   --project alpha-499407 \
-  --set-env-vars "AUTH_URL=https://deep-agents-ui-lsvgxdj6ga-uc.a.run.app" \
+  --set-env-vars "AUTH_URL=https://deep-agents-ui-lsvgxdj6ga-uc.a.run.app, \
+NEXT_PUBLIC_DEPLOYMENT_URL=https://alpha-team-714132495755.us-central1.run.app, \
+NEXT_PUBLIC_ASSISTANT_ID=alpha-team" \
   --set-secrets "\
 AUTH_SECRET=AUTH_SECRET:latest,\
 AUTH_GOOGLE_ID=AUTH_GOOGLE_ID:latest,\
