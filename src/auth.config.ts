@@ -1,4 +1,4 @@
-import type { NextAuthConfig } from "next";
+import type { NextAuthConfig } from "next-auth";
 import Google from "next-auth/providers/google";
 import GitHub from "next-auth/providers/github";
 import Credentials from "next-auth/providers/credentials";
@@ -51,7 +51,7 @@ export const authConfig = {
       }
       return true;
     },
-    async signIn({ account, profile, user }) {
+    async signIn(_params) {
       return true;
     },
     async jwt({ token, account }) {

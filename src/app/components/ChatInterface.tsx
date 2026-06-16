@@ -282,9 +282,9 @@ export const ChatInterface = React.memo<ChatInterfaceProps>(({ assistant }) => {
                   if (!uiForIdx.has(key)) uiForIdx.set(key, []);
                   uiForIdx.get(key)!.push(item);
                 };
-                gexItems.forEach((item, i) => addUi(measurementMsgIndices[i], item));
-                pnlItems.forEach((item) => addUi(brokerMsgIndices[brokerMsgIndices.length - 1], item));
-                otherItems.forEach((item) => addUi(processedMessages.length - 1, item));
+                gexItems.forEach((item: any, i: number) => addUi(measurementMsgIndices[i], item));
+                pnlItems.forEach((item: any) => addUi(brokerMsgIndices[brokerMsgIndices.length - 1], item));
+                otherItems.forEach((item: any) => addUi(processedMessages.length - 1, item));
 
                 return processedMessages.map((data, index) => {
                 const isLastMessage = index === processedMessages.length - 1;

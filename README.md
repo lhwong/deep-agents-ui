@@ -116,3 +116,32 @@ gcloud builds submit \
   --project alpha-499407 \
   --substitutions "_LANGSMITH_KEY=lsv2_pt_..." \
   --build-arg "NEXT_PUBLIC_LANGSMITH_API_KEY=$_LANGSMITH_KEY"
+
+
+gcloud run deploy deep-agents-ui \
+  --image us-central1-docker.pkg.dev/alpha-499407/alpha-repo/deep-agents-ui:latest \
+  --platform managed \
+  --region us-central1 \
+  --allow-unauthenticated \
+  --project alpha-499407 \
+  --set-secrets "\
+AUTH_SECRET=AUTH_SECRET:latest,\
+AUTH_GOOGLE_ID=AUTH_GOOGLE_ID:latest,\
+AUTH_GOOGLE_SECRET=AUTH_GOOGLE_SECRET:latest,\
+AUTH_GITHUB_ID=AUTH_GITHUB_ID:latest,\
+AUTH_GITHUB_SECRET=AUTH_GITHUB_SECRET:latest"
+
+
+gcloud run deploy deep-agents-ui \
+  --image us-central1-docker.pkg.dev/alpha-499407/alpha-repo/deep-agents-ui:latest \
+  --platform managed \
+  --region us-central1 \
+  --allow-unauthenticated \
+  --project alpha-499407 \
+  --set-env-vars "AUTH_URL=https://deep-agents-ui-lsvgxdj6ga-uc.a.run.app" \
+  --set-secrets "\
+AUTH_SECRET=AUTH_SECRET:latest,\
+AUTH_GOOGLE_ID=AUTH_GOOGLE_ID:latest,\
+AUTH_GOOGLE_SECRET=AUTH_GOOGLE_SECRET:latest,\
+AUTH_GITHUB_ID=AUTH_GITHUB_ID:latest,\
+AUTH_GITHUB_SECRET=AUTH_GITHUB_SECRET:latest"
