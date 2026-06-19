@@ -46,13 +46,15 @@ export function useChat({
     threadId: threadId ?? null,
     onThreadId: setThreadId,
     defaultHeaders: { "x-auth-scheme": "langsmith" },
-    // Enable fetching state history when switching to existing threads
-    fetchStateHistory: true,
+    fetchStateHistory: { limit: 50 },
     // Revalidate thread list when stream finishes, errors, or creates new thread
     onFinish: onHistoryRevalidate,
     onError: (err) => {
-      if ((err as any)?.status === 401) {
+      const status = (err as any)?.status;
+      if (status === 401) {
         signOut({ callbackUrl: "/login" });
+      } else {
+        console.error("[useStream] error:", err);
       }
       onHistoryRevalidate?.();
     },
@@ -69,7 +71,7 @@ export function useChat({
           optimisticValues: (prev) => ({
             messages: [...(prev.messages ?? []), newMessage],
           }),
-          config: { ...(activeAssistant?.config ?? {}), recursion_limit: 100 },
+          config: { ...(activeAssistant?.config ?? {}), recursion_limit: 500 },
           metadata: { user_id: session?.user?.id },
           streamSubgraphs: true,
         },

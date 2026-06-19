@@ -56,20 +56,15 @@ export const authConfig = {
     },
     async jwt({ token, account }) {
       if (account) {
-        console.log("FIRST LOGIN DETECTED:", account);
-        // account.access_token is the ya29... string
-        // account.id_token is the eyJ... string you need!
         token.accessToken = account.id_token || account.access_token;
         token.provider = account.provider;
         token.sub = account.providerAccountId;
       }
-      console.log("JWT TOKEN:", token);
       return token;
     },
     async session({ session, token }) {
       session.accessToken = token.accessToken as string;
       session.provider = token.provider as string;
-      console.log("SESSION:", token);
       if (session.user) {
         session.user.id = token.sub as string;
       }

@@ -111,10 +111,10 @@ function HomePageInner({
         onSave={handleSaveConfig}
         initialConfig={config}
       />
-      <div className="flex h-screen flex-col">
-        <header className="flex h-16 items-center justify-between border-b border-border px-6">
-          <div className="flex items-center gap-4">
-            <h1 className="text-xl font-semibold">Deep Agent UI</h1>
+      <div className="flex h-screen w-full flex-col overflow-x-hidden">
+        <header className="flex h-16 items-center justify-between border-b border-border px-3 sm:px-6">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <h1 className="text-xl font-semibold">Alpha</h1>
             {!sidebar && (
               <Button
                 variant="ghost"
@@ -122,8 +122,8 @@ function HomePageInner({
                 onClick={() => setSidebar("1")}
                 className="rounded-md border border-border bg-card p-3 text-foreground hover:bg-accent"
               >
-                <MessagesSquare className="mr-2 h-4 w-4" />
-                Threads
+                <MessagesSquare className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Threads</span>
                 {interruptCount > 0 && (
                   <span className="ml-2 inline-flex min-h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] text-destructive-foreground">
                     {interruptCount}
@@ -132,8 +132,8 @@ function HomePageInner({
               </Button>
             )}
           </div>
-          <div className="flex items-center gap-2">
-            <div className="text-sm text-muted-foreground">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <div className="hidden text-sm text-muted-foreground sm:block">
               <span className="font-medium">Assistant:</span>{" "}
               {config.assistantId}
             </div>
@@ -142,8 +142,8 @@ function HomePageInner({
               size="sm"
               onClick={() => setConfigDialogOpen(true)}
             >
-              <Settings className="mr-2 h-4 w-4" />
-              Settings
+              <Settings className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Settings</span>
             </Button>
             <Button
               variant="outline"
@@ -152,8 +152,8 @@ function HomePageInner({
               disabled={!threadId}
               className="border-[#2F6868] bg-[#2F6868] text-white hover:bg-[#2F6868]/80"
             >
-              <SquarePen className="mr-2 h-4 w-4" />
-              New Thread
+              <SquarePen className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">New Thread</span>
             </Button>
             <form action={signOut}>
               <Button

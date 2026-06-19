@@ -132,6 +132,12 @@ AUTH_GITHUB_ID=AUTH_GITHUB_ID:latest,\
 AUTH_GITHUB_SECRET=AUTH_GITHUB_SECRET:latest"
 
 
+# Build and push via Cloud Build
+gcloud builds submit \
+  --tag us-central1-docker.pkg.dev/alpha-499407/alpha-repo/deep-agents-ui:latest \
+  --project alpha-499407
+
+
 gcloud run deploy deep-agents-ui \
   --image us-central1-docker.pkg.dev/alpha-499407/alpha-repo/deep-agents-ui:latest \
   --platform managed \
