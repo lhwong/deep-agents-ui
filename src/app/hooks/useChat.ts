@@ -24,6 +24,7 @@ export type StateType = {
     page_content?: string;
   };
   ui?: any;
+  progress?: string;
 };
 
 export function useChat({
@@ -47,7 +48,6 @@ export function useChat({
     onThreadId: setThreadId,
     defaultHeaders: { "x-auth-scheme": "langsmith" },
     fetchStateHistory: { limit: 50 },
-    // Revalidate thread list when stream finishes, errors, or creates new thread
     onFinish: onHistoryRevalidate,
     onError: (err) => {
       const status = (err as any)?.status;
@@ -59,6 +59,11 @@ export function useChat({
       onHistoryRevalidate?.();
     },
     onCreated: onHistoryRevalidate,
+    onCustomEvent: (data, { mutate }) => {
+      if (data && typeof data === "object" && "message" in data) {
+        mutate({ progress: (data as { message: string }).message });
+      }
+    },
     experimental_thread: thread,
   });
 
@@ -73,6 +78,7 @@ export function useChat({
           }),
           config: { ...(activeAssistant?.config ?? {}), recursion_limit: 500 },
           metadata: { user_id: session?.user?.id },
+          multitaskStrategy: "interrupt",
           streamSubgraphs: true,
         },
       );
@@ -164,6 +170,7 @@ export function useChat({
     files: stream.values.files ?? {},
     email: stream.values.email,
     ui: stream.values.ui,
+    progress: stream.values.progress,
     setFiles,
     messages: stream.messages,
     isLoading: stream.isLoading,

@@ -37,8 +37,15 @@ export function ObservablePlot({ data, marks, options = {} }: ObservablePlotProp
       return out;
     });
 
+    // Bar/rect marks with tip:true must use pointerX (x-only snapping).
+    // The default pointer uses Euclidean distance, so hovering near the top of
+    // a tall bar can attract to the centroid of a shorter adjacent bar, causing
+    // the tooltip value to flicker as you move up/down within the same bar.
+    const BAR_MARK_TYPES = new Set(["barX", "barY", "rectX", "rectY"]);
+
     const resolvedMarks = marks.flatMap(({ type, ...opts }) => {
-      const markFn = (Plot as unknown as Record<string, (...args: unknown[]) => unknown>)[type];
+      const P = Plot as unknown as Record<string, (...args: unknown[]) => unknown>;
+      const markFn = P[type];
       if (typeof markFn !== "function") {
         console.warn(`Unknown Observable Plot mark type: "${type}"`);
         return [];
@@ -65,6 +72,13 @@ export function ObservablePlot({ data, marks, options = {} }: ObservablePlotProp
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { tip: _tip, ...rest } = opts;
         return [markFn(coercedData, rest)];
+      }
+
+      // Bar/rect marks: split tip:true into a separate tip mark using pointerX
+      // so the tooltip snaps by x-position only and stays stable within a bar.
+      if (BAR_MARK_TYPES.has(type) && opts.tip === true) {
+        const { tip: _tip, ...barOpts } = opts;
+        return [markFn(coercedData, barOpts), P.tip(coercedData, P.pointerX(barOpts))];
       }
 
       try {

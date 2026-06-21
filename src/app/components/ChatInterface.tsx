@@ -16,6 +16,7 @@ import {
   Clock,
   Circle,
   FileIcon,
+  Loader2,
 } from "lucide-react";
 import { ChatMessage } from "@/app/components/ChatMessage";
 import type {
@@ -75,6 +76,7 @@ export const ChatInterface = React.memo<ChatInterfaceProps>(({ assistant }) => {
     todos,
     files,
     ui,
+    progress,
     setFiles,
     isLoading,
     isThreadLoading,
@@ -324,10 +326,22 @@ export const ChatInterface = React.memo<ChatInterfaceProps>(({ assistant }) => {
             "mx-auto w-[calc(100%-32px)] max-w-[1024px] transition-colors duration-200 ease-in-out"
           )}
         >
-          {(hasTasks || hasFiles) && (
+          {(hasTasks || hasFiles || isLoading) && (
             <div className="flex max-h-72 flex-col overflow-y-auto border-b border-border bg-sidebar empty:hidden">
               {!metaOpen && (
                 <>
+                  {isLoading && !hasTasks && (
+                    <div className="flex items-center gap-3 px-[18px] py-3 text-sm text-muted-foreground">
+                      <Loader2 size={16} className="animate-spin shrink-0" />
+                      <span>{progress ?? "Thinking…"}</span>
+                    </div>
+                  )}
+                  {isLoading && hasTasks && progress && (
+                    <div className="flex items-center gap-3 px-[18px] pb-2 text-xs text-muted-foreground">
+                      <Loader2 size={12} className="animate-spin shrink-0" />
+                      <span>{progress}</span>
+                    </div>
+                  )}
                   {(() => {
                     const activeTask = todos.find(
                       (t) => t.status === "in_progress"
@@ -540,7 +554,7 @@ export const ChatInterface = React.memo<ChatInterfaceProps>(({ assistant }) => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={isLoading ? "Running..." : "Write your message..."}
+              placeholder={isLoading ? "Running…" : "Write your message..."}
               className="font-inherit field-sizing-content flex-1 resize-none border-0 bg-transparent px-[18px] pb-[13px] pt-[14px] text-sm leading-7 text-primary outline-none placeholder:text-tertiary"
               rows={1}
             />
