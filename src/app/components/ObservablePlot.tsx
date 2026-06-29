@@ -90,13 +90,15 @@ export function ObservablePlot({ data, marks, options = {} }: ObservablePlotProp
     });
 
     // Extract custom hints that must not be forwarded to Plot.plot().
-    // _y2Factor: curve_scale = bar_abs_max / curve_abs_max (used for right axis labels)
+    // _y2Factor: scale factor — right-axis value = tick / _y2Factor + _y2Offset
+    // _y2Offset: additive offset for affine back-transforms (default 0)
     // _y2Label:  label text for the right axis
     const rawOptions = options as Record<string, unknown>;
     const y2Factor = typeof rawOptions._y2Factor === "number" ? rawOptions._y2Factor : null;
+    const y2Offset = typeof rawOptions._y2Offset === "number" ? rawOptions._y2Offset : 0;
     const y2Label  = typeof rawOptions._y2Label  === "string" ? rawOptions._y2Label  : null;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { _y2Factor: _f, _y2Label: _l, ...cleanOptions } = rawOptions;
+    const { _y2Factor: _f, _y2Offset: _o, _y2Label: _l, ...cleanOptions } = rawOptions;
 
     // Coerce ISO date string ticks → Date objects so time-scale tickFormat works.
     // Also replace %-d (Linux strftime, unsupported in d3-time-format) with an Intl formatter.
@@ -157,7 +159,7 @@ export function ObservablePlot({ data, marks, options = {} }: ObservablePlotProp
         for (const tick of ticks) {
           const yPos = applyFn ? applyFn(tick) : NaN;
           if (!isFinite(yPos)) continue;
-          const originalValue = tick / y2Factor;
+          const originalValue = tick / y2Factor + y2Offset;
 
           const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
           line.setAttribute("x1", String(xPos)); line.setAttribute("x2", String(xPos + 5));

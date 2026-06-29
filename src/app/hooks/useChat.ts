@@ -122,7 +122,15 @@ export function useChat({
       if (!threadId) return;
       // TODO: missing a way how to revalidate the internal state
       // I think we do want to have the ability to externally manage the state
-      await client.threads.updateState(threadId, { values: { files } });
+      try {
+        await client.threads.updateState(threadId, { values: { files } });
+      } catch (err) {
+        if ((err as any)?.status === 401) {
+          signOut({ callbackUrl: "/login" });
+          return;
+        }
+        throw err;
+      }
     },
     [client, threadId]
   );

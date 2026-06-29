@@ -2,6 +2,7 @@
 import { signOut } from "./actions";
 
 import React, { useState, useEffect, useCallback, Suspense } from "react";
+import { signOut as signOutClient } from "next-auth/react";
 import { useQueryState } from "nuqs";
 import { getConfig, saveConfig, StandaloneConfig } from "@/lib/config";
 import { ConfigDialog } from "@/app/components/ConfigDialog";
@@ -51,6 +52,10 @@ function HomePageInner({
         const data = await client.assistants.get(config.assistantId);
         setAssistant(data);
       } catch (error) {
+        if ((error as any)?.status === 401) {
+          signOutClient({ callbackUrl: "/login" });
+          return;
+        }
         console.error("Failed to fetch assistant:", error);
         setAssistant({
           assistant_id: config.assistantId,
@@ -80,6 +85,10 @@ function HomePageInner({
         }
         setAssistant(defaultAssistant);
       } catch (error) {
+        if ((error as any)?.status === 401) {
+          signOutClient({ callbackUrl: "/login" });
+          return;
+        }
         console.error(
           "Failed to find default assistant from graph_id: try setting the assistant_id directly:",
           error

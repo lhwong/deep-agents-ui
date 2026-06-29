@@ -6,6 +6,7 @@ import { ToolCallBox } from "@/app/components/ToolCallBox";
 import { MarkdownContent } from "@/app/components/MarkdownContent";
 import { LoadExternalComponent } from "@langchain/langgraph-sdk/react-ui";
 import { ObservablePlot } from "@/app/components/ObservablePlot";
+import { MarkdownReport } from "@/app/components/MarkdownReport";
 import type {
   SubAgent,
   ToolCall,
@@ -122,7 +123,10 @@ export const ChatMessage = React.memo<ChatMessageProps>(
                     message={uiComp}
                     namespace={graphId}
                     meta={{}}
-                    components={{ observable_plot: ObservablePlot as React.FunctionComponent }}
+                    components={{
+                      observable_plot: ObservablePlot as unknown as React.FunctionComponent,
+                      markdown_report: MarkdownReport as unknown as React.FunctionComponent,
+                    }}
                   />
                 ))}
               </div>

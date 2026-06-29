@@ -66,6 +66,12 @@ export const ChatInterface = React.memo<ChatInterfaceProps>(({ assistant }) => {
   const [metaOpen, setMetaOpen] = useState<"tasks" | "files" | null>(null);
   const tasksContainerRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  // push_ui_message() never receives the in-flight AI message, so orphaned UI
+  // items (no metadata.message_id) come back unscoped on every render. Once we
+  // infer which message index an item belongs to, pin it there permanently —
+  // otherwise a later, unrelated turn that happens to become "the latest
+  // message" inherits stale items (e.g. a P&L chart from hours earlier).
+  const orphanAssignmentRef = useRef<Map<string, number>>(new Map());
 
   const [input, setInput] = useState("");
   const { scrollRef, contentRef } = useStickToBottom();
@@ -260,33 +266,57 @@ export const ChatInterface = React.memo<ChatInterfaceProps>(({ assistant }) => {
           ) : (
             <>
               {(() => {
-                // Assign orphaned UI items (no message_id) to AI messages positionally.
+                // Assign orphaned UI items (no message_id) to AI messages.
                 // GEX charts (id: gex_*) → sequentially to measurement-agent task calls.
-                // P&L charts (id: chart_cumulative_pnl_*) → last broker-agent task call.
+                // P&L charts/reports (id: pnl_chart_*, pnl_report_*) → the message
+                // that directly called the P&L rendering tool.
                 // Others → last message.
                 const orphanedUi = (ui ?? []).filter((u: any) => !u.metadata?.message_id);
                 const measurementMsgIndices: number[] = [];
-                const brokerMsgIndices: number[] = [];
+                const pnlMsgIndices: number[] = [];
+                const PNL_TOOL_NAMES = new Set([
+                  "render_pnl_chart", "generate_pnl_report", "add_index_overlay",
+                ]);
                 processedMessages.forEach((d, idx) => {
                   d.toolCalls.forEach((tc: any) => {
-                    if (tc.name === "task") {
-                      if (tc.args?.subagent_type === "measurement-agent") measurementMsgIndices.push(idx);
-                      if (tc.args?.subagent_type === "broker-agent") brokerMsgIndices.push(idx);
+                    if (tc.name === "task" && tc.args?.subagent_type === "measurement-agent") {
+                      measurementMsgIndices.push(idx);
                     }
+                    if (PNL_TOOL_NAMES.has(tc.name)) pnlMsgIndices.push(idx);
                   });
                 });
                 const gexItems = orphanedUi.filter((u: any) => u.id?.startsWith("gex_"));
-                const pnlItems = orphanedUi.filter((u: any) => u.id?.startsWith("chart_cumulative_pnl"));
-                const otherItems = orphanedUi.filter((u: any) => !u.id?.startsWith("gex_") && !u.id?.startsWith("chart_cumulative_pnl"));
+                const pnlItems = orphanedUi.filter(
+                  (u: any) => u.id?.startsWith("pnl_chart_") || u.id?.startsWith("pnl_report_")
+                );
+                const otherItems = orphanedUi.filter(
+                  (u: any) => !u.id?.startsWith("gex_") && !u.id?.startsWith("pnl_chart_") && !u.id?.startsWith("pnl_report_")
+                );
                 const uiForIdx = new Map<number, any[]>();
                 const addUi = (idx: number | undefined, item: any) => {
                   const key = idx ?? processedMessages.length - 1;
                   if (!uiForIdx.has(key)) uiForIdx.set(key, []);
                   uiForIdx.get(key)!.push(item);
                 };
-                gexItems.forEach((item: any, i: number) => addUi(measurementMsgIndices[i], item));
-                pnlItems.forEach((item: any) => addUi(brokerMsgIndices[brokerMsgIndices.length - 1], item));
-                otherItems.forEach((item: any) => addUi(processedMessages.length - 1, item));
+                // Pin each item's resolved index the first time it's seen — later
+                // renders (even from unrelated turns) reuse the pinned index
+                // instead of recomputing "the latest relevant message."
+                const assignments = orphanAssignmentRef.current;
+                const resolveIndex = (item: any, fallback: () => number | undefined) => {
+                  if (item.id && assignments.has(item.id)) return assignments.get(item.id);
+                  const idx = fallback();
+                  if (item.id && idx !== undefined) assignments.set(item.id, idx);
+                  return idx;
+                };
+                gexItems.forEach((item: any, i: number) =>
+                  addUi(resolveIndex(item, () => measurementMsgIndices[i]), item)
+                );
+                pnlItems.forEach((item: any) =>
+                  addUi(resolveIndex(item, () => pnlMsgIndices[pnlMsgIndices.length - 1]), item)
+                );
+                otherItems.forEach((item: any) =>
+                  addUi(resolveIndex(item, () => processedMessages.length - 1), item)
+                );
 
                 return processedMessages.map((data, index) => {
                 const isLastMessage = index === processedMessages.length - 1;
