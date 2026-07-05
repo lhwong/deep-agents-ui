@@ -274,6 +274,7 @@ export const ChatInterface = React.memo<ChatInterfaceProps>(({ assistant }) => {
                 const orphanedUi = (ui ?? []).filter((u: any) => !u.metadata?.message_id);
                 const measurementMsgIndices: number[] = [];
                 const pnlMsgIndices: number[] = [];
+                const gexMsgIndices: number[] = [];
                 const PNL_TOOL_NAMES = new Set([
                   "render_pnl_chart", "generate_pnl_report", "add_index_overlay",
                 ]);
@@ -283,6 +284,7 @@ export const ChatInterface = React.memo<ChatInterfaceProps>(({ assistant }) => {
                       measurementMsgIndices.push(idx);
                     }
                     if (PNL_TOOL_NAMES.has(tc.name)) pnlMsgIndices.push(idx);
+                    if (tc.name === "render_gex_chart") gexMsgIndices.push(idx);
                   });
                 });
                 const gexItems = orphanedUi.filter((u: any) => u.id?.startsWith("gex_"));
@@ -308,8 +310,20 @@ export const ChatInterface = React.memo<ChatInterfaceProps>(({ assistant }) => {
                   if (item.id && idx !== undefined) assignments.set(item.id, idx);
                   return idx;
                 };
+                // GEX charts: pair each chart (by insertion order) with the
+                // corresponding render_gex_chart call by the same positional index.
+                //   gexItems[0] → gexMsgIndices[0]  (1st GEX chart → 1st call)
+                //   gexItems[1] → gexMsgIndices[1]  (2nd GEX chart → 2nd call)
+                // gexMsgIndices is recomputed fresh from the CURRENT thread's
+                // messages on every render, so switching threads automatically
+                // reassigns charts to the right messages without stale-ref issues.
+                // We do NOT save results to orphanAssignmentRef to avoid
+                // cross-thread contamination.
                 gexItems.forEach((item: any, i: number) =>
-                  addUi(resolveIndex(item, () => measurementMsgIndices[i]), item)
+                  addUi(
+                    measurementMsgIndices[i] ?? gexMsgIndices[i] ?? gexMsgIndices[gexMsgIndices.length - 1],
+                    item
+                  )
                 );
                 pnlItems.forEach((item: any) =>
                   addUi(resolveIndex(item, () => pnlMsgIndices[pnlMsgIndices.length - 1]), item)
