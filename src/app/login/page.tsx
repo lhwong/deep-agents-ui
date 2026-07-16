@@ -3,7 +3,7 @@ import { signIn } from "@/auth"
 export default function LoginPage() {
   return (
     <div className="flex flex-col gap-4 items-center justify-center h-screen">
-      <h1>Welcome to Deep Agents</h1>
+      <h1>Welcome to Alpha Team</h1>
       
       <form action={async () => {
         "use server"

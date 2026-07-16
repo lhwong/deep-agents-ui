@@ -18,6 +18,14 @@ COPY . .
 ARG NEXT_PUBLIC_LANGSMITH_API_KEY=""
 ENV NEXT_PUBLIC_LANGSMITH_API_KEY=$NEXT_PUBLIC_LANGSMITH_API_KEY
 
+# When alpha-team has Internal ingress, set this to "/api/langgraph" so the
+# browser calls the local proxy route instead of alpha-team directly.
+ARG NEXT_PUBLIC_DEPLOYMENT_URL=""
+ENV NEXT_PUBLIC_DEPLOYMENT_URL=$NEXT_PUBLIC_DEPLOYMENT_URL
+
+ARG NEXT_PUBLIC_ASSISTANT_ID=""
+ENV NEXT_PUBLIC_ASSISTANT_ID=$NEXT_PUBLIC_ASSISTANT_ID
+
 # Disable Next.js telemetry during build
 ENV NEXT_TELEMETRY_DISABLED=1
 

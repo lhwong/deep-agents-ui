@@ -1,9 +1,69 @@
+import { NextRequest, NextResponse } from "next/server";
 import NextAuth from "next-auth";
 import { authConfig } from "./auth.config";
 
-export default NextAuth(authConfig).auth;
+const BACKEND = process.env.LANGGRAPH_API_URL?.replace(/\/$/, "") ?? "";
+const { auth } = NextAuth(authConfig);
+
+async function proxyToBackend(req: NextRequest): Promise<Response> {
+  if (!BACKEND) {
+    return NextResponse.json(
+      { error: "LANGGRAPH_API_URL is not configured" },
+      { status: 500 },
+    );
+  }
+  const path = req.nextUrl.pathname.slice("/api/langgraph".length);
+  let upstream: URL;
+  try {
+    upstream = new URL(`${BACKEND}${path}`);
+  } catch {
+    return NextResponse.json(
+      { error: `LANGGRAPH_API_URL is not a valid absolute URL: "${BACKEND}" — must start with https://` },
+      { status: 500 },
+    );
+  }
+  req.nextUrl.searchParams.forEach((v, k) => upstream.searchParams.set(k, v));
+
+  const fwdHeaders = new Headers();
+  req.headers.forEach((v, k) => {
+    if (k !== "host" && k !== "connection" && k !== "keep-alive") {
+      fwdHeaders.set(k, v);
+    }
+  });
+
+  const hasBody = req.method !== "GET" && req.method !== "HEAD";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const upstreamRes = await fetch(upstream.toString(), {
+    method: req.method,
+    headers: fwdHeaders,
+    body: hasBody ? req.body : undefined,
+    duplex: "half",
+  } as any);
+
+  const resHeaders = new Headers();
+  upstreamRes.headers.forEach((v, k) => {
+    if (k !== "content-encoding" && k !== "content-length") {
+      resHeaders.set(k, v);
+    }
+  });
+
+  return new NextResponse(upstreamRes.body, {
+    status: upstreamRes.status,
+    headers: resHeaders,
+  });
+}
+
+export default auth(async function middleware(req) {
+  if (req.nextUrl.pathname.startsWith("/api/langgraph/")) {
+    return proxyToBackend(req);
+  }
+  // For all other matched routes: auth wrapper handles session check
+  // via the authorized() callback in auth.config.ts
+});
 
 export const config = {
-  // https://nextjs.org/docs/app/building-your-application/routing/middleware#matcher
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    "/api/langgraph/:path*",
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+  ],
 };

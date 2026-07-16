@@ -13,19 +13,41 @@ function envDefaults(): StandaloneConfig | null {
   return { deploymentUrl, assistantId };
 }
 
+function resolveDeploymentUrl(url: string): string {
+  // Allow a relative path (e.g. "/api/langgraph") so the proxy route works
+  // without knowing the Cloud Run service URL at build time.
+  if (url.startsWith("/") && typeof window !== "undefined") {
+    return `${window.location.origin}${url}`;
+  }
+  return url;
+}
+
 export function getConfig(): StandaloneConfig | null {
   if (typeof window === "undefined") return envDefaults();
 
-  const stored = localStorage.getItem(CONFIG_KEY);
-  if (stored) {
-    try {
-      return JSON.parse(stored);
-    } catch {
-      // fall through to env defaults
-    }
+  // Build-time env vars are admin-controlled and always win for deploymentUrl
+  // and assistantId. localStorage fills in langsmithApiKey and acts as a
+  // fallback for everything else when no env vars were baked in.
+  const envUrl       = process.env.NEXT_PUBLIC_DEPLOYMENT_URL ?? "";
+  const envAssistant = process.env.NEXT_PUBLIC_ASSISTANT_ID   ?? "";
+
+  let stored: StandaloneConfig | null = null;
+  try {
+    const raw = localStorage.getItem(CONFIG_KEY);
+    if (raw) stored = JSON.parse(raw) as StandaloneConfig;
+  } catch {
+    // ignore malformed storage
   }
 
-  return envDefaults();
+  const deploymentUrl = envUrl       || stored?.deploymentUrl || "";
+  const assistantId   = envAssistant || stored?.assistantId   || "";
+  if (!deploymentUrl || !assistantId) return null;
+
+  return {
+    deploymentUrl:   resolveDeploymentUrl(deploymentUrl),
+    assistantId,
+    langsmithApiKey: stored?.langsmithApiKey,
+  };
 }
 
 export function saveConfig(config: StandaloneConfig): void {

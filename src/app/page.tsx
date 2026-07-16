@@ -6,10 +6,11 @@ import { signOut as signOutClient } from "next-auth/react";
 import { useQueryState } from "nuqs";
 import { getConfig, saveConfig, StandaloneConfig } from "@/lib/config";
 import { ConfigDialog } from "@/app/components/ConfigDialog";
+import { BrokerSettingsDialog } from "@/app/components/BrokerSettingsDialog";
 import { Button } from "@/components/ui/button";
 import { Assistant } from "@langchain/langgraph-sdk";
 import { ClientProvider, useClient } from "@/providers/ClientProvider";
-import { Settings, MessagesSquare, SquarePen } from "lucide-react";
+import { Settings, MessagesSquare, SquarePen, Building2 } from "lucide-react";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -39,6 +40,7 @@ function HomePageInner({
   const [mutateThreads, setMutateThreads] = useState<(() => void) | null>(null);
   const [interruptCount, setInterruptCount] = useState(0);
   const [assistant, setAssistant] = useState<Assistant | null>(null);
+  const [brokerDialogOpen, setBrokerDialogOpen] = useState(false);
 
   const fetchAssistant = useCallback(async () => {
     const isUUID =
@@ -120,6 +122,11 @@ function HomePageInner({
         onSave={handleSaveConfig}
         initialConfig={config}
       />
+      <BrokerSettingsDialog
+        open={brokerDialogOpen}
+        onOpenChange={setBrokerDialogOpen}
+        deploymentUrl={config.deploymentUrl}
+      />
       <div className="flex h-screen w-full flex-col overflow-x-hidden">
         <header className="flex h-16 items-center justify-between border-b border-border px-3 sm:px-6">
           <div className="flex items-center gap-2 sm:gap-4">
@@ -146,6 +153,14 @@ function HomePageInner({
               <span className="font-medium">Assistant:</span>{" "}
               {config.assistantId}
             </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setBrokerDialogOpen(true)}
+            >
+              <Building2 className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Broker</span>
+            </Button>
             <Button
               variant="outline"
               size="sm"
