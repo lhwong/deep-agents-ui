@@ -95,87 +95,19 @@ If the term "Deep Agents" is new to you, check out these videos!
 
 
 
-# Build and push via Cloud Build
-gcloud builds submit \
-  --tag us-central1-docker.pkg.dev/alpha-499407/alpha-repo/deep-agents-ui:latest \
-  --project alpha-499407
-
-# Deploy to Cloud Run (all auth secrets as runtime env vars)
-gcloud run deploy deep-agents-ui \
-  --image us-central1-docker.pkg.dev/alpha-499407/alpha-repo/deep-agents-ui:latest \
-  --platform managed \
-  --region us-central1 \
-  --allow-unauthenticated \
-  --project alpha-499407 \
-  --set-env-vars "AUTH_GOOGLE_ID=...,AUTH_GOOGLE_SECRET=...,AUTH_SECRET=...,AUTH_GITHUB_ID=...,AUTH_GITHUB_SECRET=..."
-If NEXT_PUBLIC_LANGSMITH_API_KEY needs to be baked in at build time, pass it as a build arg:
-
-
-gcloud builds submit \
-  --tag ... \
-  --project alpha-499407 \
-  --substitutions "_LANGSMITH_KEY=lsv2_pt_..." \
-  --build-arg "NEXT_PUBLIC_LANGSMITH_API_KEY=$_LANGSMITH_KEY"
-
-
-gcloud run deploy deep-agents-ui \
-  --image us-central1-docker.pkg.dev/alpha-499407/alpha-repo/deep-agents-ui:latest \
-  --platform managed \
-  --region us-central1 \
-  --allow-unauthenticated \
-  --project alpha-499407 \
-  --set-secrets "\
-AUTH_SECRET=AUTH_SECRET:latest,\
-AUTH_GOOGLE_ID=AUTH_GOOGLE_ID:latest,\
-AUTH_GOOGLE_SECRET=AUTH_GOOGLE_SECRET:latest,\
-AUTH_GITHUB_ID=AUTH_GITHUB_ID:latest,\
-AUTH_GITHUB_SECRET=AUTH_GITHUB_SECRET:latest"
-
-
-# Build and push via Cloud Build
-gcloud builds submit \
-  --tag us-central1-docker.pkg.dev/alpha-499407/alpha-repo/deep-agents-ui:latest \
-  --project alpha-499407 
-
+# Build (always use --config so build args are included)
+# NEVER use --tag directly — it omits NEXT_PUBLIC_* build args
 gcloud builds submit \
   --config cloudbuild.yaml \
-  --project alpha-499407 \
-
-  --build-arg NEXT_PUBLIC_DEPLOYMENT_URL=/api/langgraph \
-  --build-arg NEXT_PUBLIC_ASSISTANT_ID=alpha-team
+  --project alpha-499407
 
 
-
+# Deploy to Cloud Run
 gcloud run deploy deep-agents-ui \
   --image us-central1-docker.pkg.dev/alpha-499407/alpha-repo/deep-agents-ui:latest \
   --platform managed \
   --region us-central1 \
   --allow-unauthenticated \
   --project alpha-499407 \
-  --set-env-vars "AUTH_URL=https://deep-agents-ui-lsvgxdj6ga-uc.a.run.app, \
-NEXT_PUBLIC_DEPLOYMENT_URL=https://alpha-team-714132495755.us-central1.run.app, \
-NEXT_PUBLIC_ASSISTANT_ID=alpha-team", \
-LANGGRAPH_API_URL=https://alpha-team-lsvgxdj6ga-uc.a.run.app \
-  --set-secrets "\
-AUTH_SECRET=AUTH_SECRET:latest,\
-AUTH_GOOGLE_ID=AUTH_GOOGLE_ID:latest,\
-AUTH_GOOGLE_SECRET=AUTH_GOOGLE_SECRET:latest,\
-AUTH_GITHUB_ID=AUTH_GITHUB_ID:latest,\
-AUTH_GITHUB_SECRET=AUTH_GITHUB_SECRET:latest"
-
-
-
-
-
-gcloud run services update <CALLING_SERVICE> \
-    --region=us-central1 \
-    --network=default \
-    --subnet=default \
-    --vpc-egress=all-traffic \
-    --async=false
-
-
-gcloud run services update deep-agents-ui \
-  --region us-central1 \
-  --project alpha-499407 \
-  --vpc-egress private-ranges-only
+  --set-env-vars "AUTH_URL=https://deep-agents-ui-lsvgxdj6ga-uc.a.run.app,LANGGRAPH_API_URL=https://alpha-team-lsvgxdj6ga-uc.a.run.app" \
+  --set-secrets "AUTH_SECRET=AUTH_SECRET:latest,AUTH_GOOGLE_ID=AUTH_GOOGLE_ID:latest,AUTH_GOOGLE_SECRET=AUTH_GOOGLE_SECRET:latest,AUTH_GITHUB_ID=AUTH_GITHUB_ID:latest,AUTH_GITHUB_SECRET=AUTH_GITHUB_SECRET:latest"

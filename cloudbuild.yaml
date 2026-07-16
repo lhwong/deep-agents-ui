@@ -5,7 +5,7 @@ steps:
       - --tag
       - us-central1-docker.pkg.dev/alpha-499407/alpha-repo/deep-agents-ui:latest
       - --build-arg
-      - NEXT_PUBLIC_DEPLOYMENT_URL=/api/langgraph
+      - NEXT_PUBLIC_DEPLOYMENT_URL=https://alpha-team-714132495755.us-central1.run.app
       - --build-arg
       - NEXT_PUBLIC_ASSISTANT_ID=alpha-team
       - .

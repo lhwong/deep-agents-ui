@@ -25,9 +25,6 @@ function resolveDeploymentUrl(url: string): string {
 export function getConfig(): StandaloneConfig | null {
   if (typeof window === "undefined") return envDefaults();
 
-  // Build-time env vars are admin-controlled and always win for deploymentUrl
-  // and assistantId. localStorage fills in langsmithApiKey and acts as a
-  // fallback for everything else when no env vars were baked in.
   const envUrl       = process.env.NEXT_PUBLIC_DEPLOYMENT_URL ?? "";
   const envAssistant = process.env.NEXT_PUBLIC_ASSISTANT_ID   ?? "";
 
@@ -39,8 +36,9 @@ export function getConfig(): StandaloneConfig | null {
     // ignore malformed storage
   }
 
-  const deploymentUrl = envUrl       || stored?.deploymentUrl || "";
-  const assistantId   = envAssistant || stored?.assistantId   || "";
+  // localStorage wins — user's explicit settings override build-time defaults.
+  const deploymentUrl = stored?.deploymentUrl || envUrl       || "";
+  const assistantId   = stored?.assistantId   || envAssistant || "";
   if (!deploymentUrl || !assistantId) return null;
 
   return {
