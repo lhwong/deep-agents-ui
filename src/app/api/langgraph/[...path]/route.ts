@@ -51,6 +51,14 @@ async function proxy(
   resHeaders.delete("content-encoding");
   // Let the browser handle content-length based on actual body
   resHeaders.delete("content-length");
+  // Strip Next.js-internal control headers the backend may accidentally echo back.
+  // If x-middleware-rewrite reaches Next.js's route processor with a non-absolute
+  // URL it throws "TypeError: Invalid URL" inside tp() (Next.js internals).
+  resHeaders.delete("x-middleware-rewrite");
+  resHeaders.delete("x-middleware-next");
+  resHeaders.delete("x-middleware-override-headers");
+  resHeaders.delete("x-nextjs-rewrite");
+  resHeaders.delete("x-nextjs-redirect");
 
   return new NextResponse(upstreamRes.body, {
     status: upstreamRes.status,

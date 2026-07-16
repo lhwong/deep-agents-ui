@@ -40,9 +40,17 @@ async function proxyToBackend(req: NextRequest): Promise<Response> {
     duplex: "half",
   } as any);
 
+  // Strip Next.js-internal control headers — if x-middleware-rewrite reaches
+  // Next.js's middleware processor with a non-absolute URL it throws
+  // "TypeError: Invalid URL" inside Next.js internals (tp() in the server chunk).
+  const STRIP_HEADERS = new Set([
+    "content-encoding", "content-length",
+    "x-middleware-rewrite", "x-middleware-next", "x-middleware-override-headers",
+    "x-nextjs-rewrite", "x-nextjs-redirect",
+  ]);
   const resHeaders = new Headers();
   upstreamRes.headers.forEach((v, k) => {
-    if (k !== "content-encoding" && k !== "content-length") {
+    if (!STRIP_HEADERS.has(k)) {
       resHeaders.set(k, v);
     }
   });
