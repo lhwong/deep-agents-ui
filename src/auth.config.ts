@@ -39,18 +39,6 @@ export const authConfig = {
     signIn: "/login", // Optional: Link to a custom login page
   },
   callbacks: {
-    authorized({ auth, request: { nextUrl } }) {
-      const isLoggedIn = !!auth?.user;
-      const isOnDashboard = !nextUrl.pathname.startsWith("/login");
-
-      if (isOnDashboard) {
-        if (isLoggedIn) return true;
-        return false; // Redirect unauthenticated users to login page
-      } else if (isLoggedIn) {
-        return Response.redirect(new URL("/", nextUrl));
-      }
-      return true;
-    },
     async signIn(_params) {
       return true;
     },

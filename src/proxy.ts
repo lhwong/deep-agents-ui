@@ -62,11 +62,24 @@ async function proxyToBackend(req: NextRequest): Promise<Response> {
 }
 
 export default auth(async function middleware(req) {
-  if (req.nextUrl.pathname.startsWith("/api/langgraph/")) {
+  const { pathname } = req.nextUrl;
+
+  if (pathname.startsWith("/api/langgraph/")) {
     return proxyToBackend(req);
   }
-  // For all other matched routes: auth wrapper handles session check
-  // via the authorized() callback in auth.config.ts
+
+  const isLoggedIn = !!req.auth?.user;
+  const isLoginPage = pathname.startsWith("/login");
+
+  if (!isLoginPage && !isLoggedIn) {
+    const signInUrl = new URL("/login", req.nextUrl);
+    signInUrl.searchParams.set("callbackUrl", req.nextUrl.href);
+    return NextResponse.redirect(signInUrl);
+  }
+
+  if (isLoginPage && isLoggedIn) {
+    return NextResponse.redirect(new URL("/", req.nextUrl));
+  }
 });
 
 export const config = {

@@ -7,7 +7,7 @@ export default function LoginPage() {
       
       <form action={async () => {
         "use server"
-        await signIn("google")
+        await signIn("google", { redirectTo: "/" })
       }}>
         <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded">
           Sign in with Google
@@ -17,7 +17,7 @@ export default function LoginPage() {
       {/* Other providers... */}
       <form action={async () => {
         "use server"
-        await signIn("github")
+        await signIn("github", { redirectTo: "/" })
       }}>
         <button type="submit" className="px-4 py-2 bg-gray-800 text-white rounded">
           Sign in with GitHub
@@ -28,6 +28,7 @@ export default function LoginPage() {
         "use server"
         await signIn("credentials", formData)
       }} className="flex flex-col gap-2 items-center">
+        <input type="hidden" name="redirectTo" value="/" />
         <input type="text" name="username" placeholder="Username" className="px-4 py-2 border rounded" />
         <input type="password" name="password" placeholder="Password" className="px-4 py-2 border rounded" />
         <button type="submit" className="px-4 py-2 bg-gray-600 text-white rounded">
