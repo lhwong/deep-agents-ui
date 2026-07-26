@@ -10,11 +10,17 @@ export const authConfig = {
     Google({
       clientId: process.env.AUTH_GOOGLE_ID,
       clientSecret: process.env.AUTH_GOOGLE_SECRET,
+      // PKCE requires storing a verifier in an encrypted cookie; on Cloud Run
+      // the cookie can't be decrypted if AUTH_SECRET is absent or mismatched.
+      // Server-side confidential clients (with client_secret) don't need PKCE —
+      // state-only is sufficient CSRF protection.
+      checks: ["state"],
     }),
     // GitHub Provider
     GitHub({
       clientId: process.env.AUTH_GITHUB_ID,
       clientSecret: process.env.AUTH_GITHUB_SECRET,
+      checks: ["state"],
     }),
     // Simple Credentials Provider for local testing
     Credentials({

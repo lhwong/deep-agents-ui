@@ -17,7 +17,9 @@ import {
   Circle,
   FileIcon,
   Loader2,
+  LayoutTemplate,
 } from "lucide-react";
+import { PromptTemplates } from "@/app/components/PromptTemplates";
 import { ChatMessage } from "@/app/components/ChatMessage";
 import type {
   TodoItem,
@@ -64,6 +66,7 @@ const getStatusIcon = (status: TodoItem["status"], className?: string) => {
 
 export const ChatInterface = React.memo<ChatInterfaceProps>(({ assistant }) => {
   const [metaOpen, setMetaOpen] = useState<"tasks" | "files" | null>(null);
+  const [templatesOpen, setTemplatesOpen] = useState(false);
   const tasksContainerRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   // push_ui_message() never receives the in-flight AI message, so orphaned UI
@@ -589,6 +592,15 @@ export const ChatInterface = React.memo<ChatInterfaceProps>(({ assistant }) => {
               )}
             </div>
           )}
+          {templatesOpen && (
+            <PromptTemplates
+              onSelect={(prompt) => {
+                setInput(prompt);
+                textareaRef.current?.focus();
+              }}
+              onClose={() => setTemplatesOpen(false)}
+            />
+          )}
           <form
             onSubmit={handleSubmit}
             className="flex flex-col"
@@ -602,27 +614,40 @@ export const ChatInterface = React.memo<ChatInterfaceProps>(({ assistant }) => {
               className="font-inherit field-sizing-content flex-1 resize-none border-0 bg-transparent px-[18px] pb-[13px] pt-[14px] text-sm leading-7 text-primary outline-none placeholder:text-tertiary"
               rows={1}
             />
-            <div className="flex justify-between gap-2 p-3">
-              <div className="flex justify-end gap-2">
-                <Button
-                  type={isLoading ? "button" : "submit"}
-                  variant={isLoading ? "destructive" : "default"}
-                  onClick={isLoading ? stopStream : handleSubmit}
-                  disabled={!isLoading && (submitDisabled || !input.trim())}
-                >
-                  {isLoading ? (
-                    <>
-                      <Square size={14} />
-                      <span>Stop</span>
-                    </>
-                  ) : (
-                    <>
-                      <ArrowUp size={18} />
-                      <span>Send</span>
-                    </>
-                  )}
-                </Button>
-              </div>
+            <div className="flex items-center justify-between gap-2 p-3">
+              <button
+                type="button"
+                onClick={() => setTemplatesOpen((v) => !v)}
+                title="Prompt templates"
+                aria-pressed={templatesOpen}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs transition-colors",
+                  templatesOpen
+                    ? "bg-[#2F6868]/15 text-[#2F6868]"
+                    : "text-muted-foreground hover:bg-border hover:text-primary"
+                )}
+              >
+                <LayoutTemplate size={14} />
+                Templates
+              </button>
+              <Button
+                type={isLoading ? "button" : "submit"}
+                variant={isLoading ? "destructive" : "default"}
+                onClick={isLoading ? stopStream : handleSubmit}
+                disabled={!isLoading && (submitDisabled || !input.trim())}
+              >
+                {isLoading ? (
+                  <>
+                    <Square size={14} />
+                    <span>Stop</span>
+                  </>
+                ) : (
+                  <>
+                    <ArrowUp size={18} />
+                    <span>Send</span>
+                  </>
+                )}
+              </Button>
             </div>
           </form>
         </div>
