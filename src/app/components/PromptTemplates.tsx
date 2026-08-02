@@ -72,7 +72,7 @@ export const PROMPT_TEMPLATES: TemplateCategory[] = [
       {
         label: "CSP rotation backtest",
         prompt:
-          "Run a CSP rotation backtest from 2025-01-01 to today on tickers ${tickers_to_trade} with total cash $10,000, target DTE 30, close at 50% profit, EL floor 25%, max 1 contract per trade.",
+          "Run a CSP rotation backtest from 2026-01-01 to today on tickers ${tickers_to_trade} with total cash $10,000, target DTE 30, close at 50% profit, EL floor 25%, max 1 contract per trade.",
       },
       {
         label: "PCS rotation backtest",
