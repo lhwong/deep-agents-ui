@@ -10,6 +10,9 @@ export const authConfig = {
     Google({
       clientId: process.env.AUTH_GOOGLE_ID,
       clientSecret: process.env.AUTH_GOOGLE_SECRET,
+      // Force account picker so logout + re-sign-in doesn't silently reuse
+      // an active Google browser session without prompting.
+      authorization: { params: { prompt: "select_account" } },
       // PKCE requires storing a verifier in an encrypted cookie; on Cloud Run
       // the cookie can't be decrypted if AUTH_SECRET is absent or mismatched.
       // Server-side confidential clients (with client_secret) don't need PKCE —

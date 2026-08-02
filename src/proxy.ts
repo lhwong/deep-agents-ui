@@ -70,15 +70,17 @@ export default auth(async function middleware(req) {
 
   const isLoggedIn = !!req.auth?.user;
   const isLoginPage = pathname.startsWith("/login");
+  const isLandingPage = pathname === "/";
+  const isPublicPage = isLoginPage || isLandingPage;
 
-  if (!isLoginPage && !isLoggedIn) {
+  if (!isPublicPage && !isLoggedIn) {
     const signInUrl = new URL("/login", req.nextUrl);
     signInUrl.searchParams.set("callbackUrl", req.nextUrl.href);
     return NextResponse.redirect(signInUrl);
   }
 
-  if (isLoginPage && isLoggedIn) {
-    return NextResponse.redirect(new URL("/", req.nextUrl));
+  if (isPublicPage && isLoggedIn) {
+    return NextResponse.redirect(new URL("/chat", req.nextUrl));
   }
 });
 

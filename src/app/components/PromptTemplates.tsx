@@ -8,10 +8,7 @@ import { useSession } from "next-auth/react";
 
 // ── Preferred tickers ─────────────────────────────────────────────────────────
 
-const DEFAULT_TICKERS = [
-  "TSLA", "CRCL", "AMD", "NBIS", "SOFI", "NU",
-  "AVGO", "MU", "TSM", "PANW", "ARM", "MRVL", "ORCL",
-];
+const DEFAULT_TICKERS = ["NBIS", "AMD", "CRCL", "SOFI", "NU"];
 const PREF_KEY = "tickers_to_trade";
 
 function usePreferredTickers() {
@@ -70,6 +67,21 @@ export interface TemplateCategory {
 // with the user's saved ticker list from their LangGraph preferences.
 export const PROMPT_TEMPLATES: TemplateCategory[] = [
   {
+    category: "Backtest",
+    templates: [
+      {
+        label: "CSP rotation backtest",
+        prompt:
+          "Run a CSP rotation backtest from 2025-01-01 to today on tickers ${tickers_to_trade} with total cash $10,000, target DTE 30, close at 50% profit, EL floor 25%, max 1 contract per trade.",
+      },
+      {
+        label: "PCS rotation backtest",
+        prompt:
+          "Run a put credit spread rotation backtest from 2026-01-01 to today on tickers ${tickers_to_trade} with total cash $10,000,  close at 50% profit, EL floor 25%, max 1 contract per trade.",
+      },
+    ],
+  },
+  {
     category: "Portfolio",
     templates: [
       {
@@ -79,7 +91,7 @@ export const PROMPT_TEMPLATES: TemplateCategory[] = [
       {
         label: "P&L dashboard",
         prompt:
-          "Show realized P&L for closed positions and max profit for open positions for each expiration",
+          "Show realized P&L for closed positions and max profit for open positions for each expiration. Show charts and tables of realized P&L and max profit for each expiration.",
       },
       {
         label: "Realized P&L YTD",
@@ -107,16 +119,7 @@ export const PROMPT_TEMPLATES: TemplateCategory[] = [
       },
     ],
   },
-  {
-    category: "Backtest",
-    templates: [
-      {
-        label: "CSP rotation backtest",
-        prompt:
-          "Run a CSP rotation backtest from 2025-01-01 to today on tickers ${tickers_to_trade} with ELV $100,000, target DTE 30, close at 50% profit, EL floor 10%, max 1 contract per trade.",
-      },
-    ],
-  },
+  
 ];
 
 function resolvePrompt(prompt: string, tickers: string[]): string {

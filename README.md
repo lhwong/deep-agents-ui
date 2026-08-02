@@ -111,3 +111,20 @@ gcloud run deploy deep-agents-ui \
   --project alpha-499407 \
   --set-env-vars "AUTH_URL=https://deep-agents-ui-lsvgxdj6ga-uc.a.run.app,LANGGRAPH_API_URL=https://alpha-team-lsvgxdj6ga-uc.a.run.app" \
   --set-secrets "AUTH_SECRET=AUTH_SECRET:latest,AUTH_GOOGLE_ID=AUTH_GOOGLE_ID:latest,AUTH_GOOGLE_SECRET=AUTH_GOOGLE_SECRET:latest,AUTH_GITHUB_ID=AUTH_GITHUB_ID:latest,AUTH_GITHUB_SECRET=AUTH_GITHUB_SECRET:latest"
+
+
+
+  CREATE TABLE IF NOT EXISTS user_sessions (
+    id            BIGSERIAL PRIMARY KEY,
+    identity      TEXT        NOT NULL,              -- Google sub (stable user ID)
+    email         TEXT        NOT NULL,
+    signed_in_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    ip_address    INET,
+    user_agent    TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_sessions_identity
+    ON user_sessions (identity);
+
+CREATE INDEX IF NOT EXISTS idx_user_sessions_signed_in_at
+    ON user_sessions (signed_in_at DESC);
