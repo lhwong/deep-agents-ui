@@ -292,7 +292,7 @@ export default function LandingPage() {
               <div>
                 <h3 className="text-[15px] font-semibold tracking-tight">Sign in to Alpha Team</h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  Create your Alpha Team account and connect it to your broker. Your positions and buying power sync automatically.
+                  Create your Alpha Team account for free.
                 </p>
               </div>
             </div>
@@ -312,7 +312,7 @@ export default function LandingPage() {
               <div>
                 <h3 className="text-[15px] font-semibold tracking-tight">Backtest your strategy</h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  Run Cash Secured Put (CSP) or Put Credit Spread (PCS) rotation backtests against historical options data to validate your setup before going live.
+                  Run Cash Secured Put (CSP) or Put Credit Spread (PCS) rotation backtests against historical options data. See how different strategy settings — strike selection, DTE, position sizing — would have performed and get an estimate of the profit potential before going live.
                 </p>
               </div>
             </div>
@@ -322,7 +322,7 @@ export default function LandingPage() {
               <div>
                 <h3 className="text-[15px] font-semibold tracking-tight">Open a brokerage account</h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  Sign up with Tiger Brokers to trade US options. A demo account is available if you want to practice first.
+                  Sign up with Tiger Brokers to trade US options. Connect your Alpha Team account to your broker. Your positions and buying power sync automatically.
                 </p>
                 <a
                   href="https://tigr.link/s/50I5nDt"

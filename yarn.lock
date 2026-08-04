@@ -721,6 +721,29 @@
     "@parcel/watcher-win32-ia32" "2.5.1"
     "@parcel/watcher-win32-x64" "2.5.1"
 
+"@paypal/paypal-js@^10.1.0":
+  version "10.1.0"
+  resolved "https://registry.yarnpkg.com/@paypal/paypal-js/-/paypal-js-10.1.0.tgz#ae1daedca13f6db3c16a6a1981d218865238e13b"
+  integrity sha512-OolzHD7lu2K03HApg+YyMtBsPnrVc+ASj1MzuH/mz7feHj5OnxYyLWQiCcCm4douJFJ6P19JW8+LzsAN4x3jHw==
+  dependencies:
+    promise-polyfill "^8.3.0"
+
+"@paypal/react-paypal-js@^10.3.0":
+  version "10.3.0"
+  resolved "https://registry.yarnpkg.com/@paypal/react-paypal-js/-/react-paypal-js-10.3.0.tgz#f953a54f0035b48eb512a06598838877a13f70ea"
+  integrity sha512-7hSrJU0TRmyEuilrsDxGTjT9SaY5ll1CZv4cnCHFwIZ8pC5U0fPHeq1iuGERCg1XBFvOWtg7FcH1DIkHXZ6W5g==
+  dependencies:
+    "@paypal/paypal-js" "^10.1.0"
+    "@paypal/sdk-constants" "^1.0.122"
+    server-only "^0.0.1"
+
+"@paypal/sdk-constants@^1.0.122":
+  version "1.0.158"
+  resolved "https://registry.yarnpkg.com/@paypal/sdk-constants/-/sdk-constants-1.0.158.tgz#e2374f03c54b2be75c2c74e3dcce0b3f95bdb8cc"
+  integrity sha512-OrX2kN4gsBl6fG1GS1ewsNk7TTqYmdtUMVaJ+wAzPhsv9M7dfni95WuJdt4pMALOo5ioZeJ05a16BUSca5IC+Q==
+  dependencies:
+    hi-base32 "^0.5.0"
+
 "@radix-ui/colors@^1.0.0":
   version "1.0.1"
   resolved "https://registry.npmjs.org/@radix-ui/colors/-/colors-1.0.1.tgz"
@@ -2974,6 +2997,11 @@ hermes-parser@^0.25.1:
   dependencies:
     hermes-estree "0.25.1"
 
+hi-base32@^0.5.0:
+  version "0.5.1"
+  resolved "https://registry.yarnpkg.com/hi-base32/-/hi-base32-0.5.1.tgz#1279f2ddae2673219ea5870c2121d2a33132857e"
+  integrity sha512-EmBBpvdYh/4XxsnUybsPag6VikPYnN30td+vQk+GI3qpahVEG9+gTkG0aXVxTjBqQ5T6ijbWIu77O+C5WFWsnA==
+
 highlight.js@^10.4.1, highlight.js@~10.7.0:
   version "10.7.3"
   resolved "https://registry.npmjs.org/highlight.js/-/highlight.js-10.7.3.tgz"
@@ -4394,6 +4422,11 @@ prismjs@~1.27.0:
   resolved "https://registry.npmjs.org/prismjs/-/prismjs-1.27.0.tgz"
   integrity sha512-t13BGPUlFDR7wRB5kQDG4jjl7XeuH6jbJGt11JHPL96qwsEHNX2+68tFXqc1/k+/jALsbSWJKUOT/hcYAZ5LkA==
 
+promise-polyfill@^8.3.0:
+  version "8.3.0"
+  resolved "https://registry.yarnpkg.com/promise-polyfill/-/promise-polyfill-8.3.0.tgz#9284810268138d103807b11f4e23d5e945a4db63"
+  integrity sha512-H5oELycFml5yto/atYqmjyigJoAo3+OXwolYiH7OfQuYlAqhxNvTfiNMbV9hsC6Yp83yE5r2KTVmtrG6R9i6Pg==
+
 prop-types@^15.8.1:
   version "15.8.1"
   resolved "https://registry.npmjs.org/prop-types/-/prop-types-15.8.1.tgz"
@@ -4717,6 +4750,11 @@ semver@^7.7.3:
   version "7.8.4"
   resolved "https://registry.npmjs.org/semver/-/semver-7.8.4.tgz"
   integrity sha512-rUCObTnP32Q08R2uuIrt7r9PlEonuTmtuXYcW6s5kjdlj3xbnwe+21yXptAUYcMAABLkYYTtnmzb3w3EDZfueA==
+
+server-only@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/server-only/-/server-only-0.0.1.tgz#0f366bb6afb618c37c9255a314535dc412cd1c9e"
+  integrity sha512-qepMx2JxAa5jjfzxG79yPPq+8BuFToHd1hm7kI+Z4zAq1ftQiP7HcxMhDDItrbtwVeLg/cY2JnKnrcFkmiswNA==
 
 set-function-length@^1.2.2:
   version "1.2.2"

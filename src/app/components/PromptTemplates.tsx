@@ -91,7 +91,7 @@ export const PROMPT_TEMPLATES: TemplateCategory[] = [
       {
         label: "P&L dashboard",
         prompt:
-          "Show realized P&L for closed positions and max profit for open positions for each expiration. Show charts and tables of realized P&L and max profit for each expiration.",
+          "Show YTD realized P&L for closed positions and max profit for open positions for each expiration. Show charts and tables of realized P&L and max profit for each expiration.",
       },
       {
         label: "Realized P&L YTD",
