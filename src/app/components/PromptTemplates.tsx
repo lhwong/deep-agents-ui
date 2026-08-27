@@ -105,12 +105,27 @@ export const PROMPT_TEMPLATES: TemplateCategory[] = [
     ],
   },
   {
+    category: "Analysis",
+    templates: [
+      {
+        label: "Expected move strikes",
+        prompt:
+          "Based on the expected move, list strike price for next 14 expirations of AMD. Show Expiry, DTE, Exp. IV, Exp. Move ($), Target Strike, Listed Strike, Premium, APY, % OTM.",
+      },
+      {
+        label: "Naked put vs spread",
+        prompt:
+          "For ${tickers_to_trade}, compare Naked Short Put vs Bull Put Credit Spread using the expected-move strike for the nearest 30–45 DTE expiry.\n\nShow:\n1. Volatility context: ATM IV, IV Rank, IV Percentile, HV20, Vol Edge (IV/HV ratio), IV−HV Premium\n2. Structure comparison (5-wide and 10-wide spreads): Short Strike, Long Strike, Net Premium, Max Profit, Max Loss, BPR (Buying Power Reduction), Capital Efficiency, APY \n3. Comparison with 5-wide spread with expected move strike selection without cushion",
+      },
+    ],
+  },
+  {
     category: "Trade Recommendations",
     templates: [
       {
         label: "CSP recommendations",
         prompt:
-          "Using the same strategy as the CSP rotation backtest, generate sell put trade recommendations for my current account. Fetch my live account state from Tiger (ELV, cash balance, max buying power, excess liquidity, EL%), open positions and use them as the starting point.\n\nParameters:\n\nTickers: ${tickers_to_trade}\nexcess_liquidity_floor: 0.10\nmax_contracts_per_trade: 1\n\nFor each recommended trade show: Ticker, Expiry, Strike, Contracts, Margin Required, Premium, Annualised Yield, BP After Trade, EL After Trade, EL%.",
+          "Using the same strategy as the CSP rotation backtest, generate sell put trade recommendations for my current account. Fetch my live account state from Tiger (ELV, cash balance, max buying power, excess liquidity, EL%), open positions and use them as the starting point.\n\nParameters:\n\nTickers: ${tickers_to_trade}\nexcess_liquidity_floor: 0.25\nmax_contracts_per_trade: 1\n\nFirst, show all candidates (all tickers × all expirations within 30-45 DTE) as a table: Ticker, Expiry, DTE, Strike, Margin Required, Premium, Annualised Yield. Order by Annualised Yield.\n\nThen, show recommendations: Ticker, Expiry, Strike, Contracts, Margin Required, Premium, Annualised Yield, BP After Trade, EL After Trade, EL%.",
       },
       {
         label: "GEX analysis",

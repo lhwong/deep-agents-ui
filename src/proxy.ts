@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import NextAuth from "next-auth";
 import { authConfig } from "./auth.config";
 
-const BACKEND = process.env.LANGGRAPH_API_URL?.replace(/\/$/, "") ?? "";
+const BACKEND      = process.env.LANGGRAPH_API_URL?.replace(/\/$/, "") ?? "";
+const BACKEND_KEY  = process.env.LANGGRAPH_API_KEY ?? process.env.LANGCHAIN_API_KEY ?? "";
 const { auth } = NextAuth(authConfig);
 
 async function proxyToBackend(req: NextRequest): Promise<Response> {
@@ -26,10 +27,13 @@ async function proxyToBackend(req: NextRequest): Promise<Response> {
 
   const fwdHeaders = new Headers();
   req.headers.forEach((v, k) => {
-    if (k !== "host" && k !== "connection" && k !== "keep-alive") {
-      fwdHeaders.set(k, v);
-    }
+    // Strip hop-by-hop headers and client auth — the backend uses its own API key.
+    if (k === "host" || k === "connection" || k === "keep-alive" ||
+        k === "authorization" || k === "x-api-key") return;
+    fwdHeaders.set(k, v);
   });
+  // Authenticate to the LangGraph backend with the server-side key.
+  if (BACKEND_KEY) fwdHeaders.set("x-api-key", BACKEND_KEY);
 
   const hasBody = req.method !== "GET" && req.method !== "HEAD";
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

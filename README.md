@@ -29,6 +29,7 @@ Kick off the local LangGraph deployment:
 
 ```bash
 cd deepagents-quickstarts/deep_research
+source venv/bin/activate
 langgraph dev
 ```
 
@@ -110,7 +111,8 @@ gcloud run deploy deep-agents-ui \
   --allow-unauthenticated \
   --project alpha-499407 \
   --set-env-vars "AUTH_URL=https://deep-agents-ui-lsvgxdj6ga-uc.a.run.app,LANGGRAPH_API_URL=https://alpha-team-lsvgxdj6ga-uc.a.run.app" \
-  --set-secrets "AUTH_SECRET=AUTH_SECRET:latest,AUTH_GOOGLE_ID=AUTH_GOOGLE_ID:latest,AUTH_GOOGLE_SECRET=AUTH_GOOGLE_SECRET:latest,AUTH_GITHUB_ID=AUTH_GITHUB_ID:latest,AUTH_GITHUB_SECRET=AUTH_GITHUB_SECRET:latest"
+  --set-secrets "AUTH_SECRET=AUTH_SECRET:latest,AUTH_GOOGLE_ID=AUTH_GOOGLE_ID:latest,AUTH_GOOGLE_SECRET=AUTH_GOOGLE_SECRET:latest,AUTH_GITHUB_ID=AUTH_GITHUB_ID:latest,AUTH_GITHUB_SECRET=AUTH_GITHUB_SECRET:latest,
+  LANGCHAIN_API_KEY=LANGCHAIN_API_KEY:latest"
 
 
 
