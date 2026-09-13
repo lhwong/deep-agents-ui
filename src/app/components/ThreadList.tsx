@@ -90,12 +90,12 @@ function ErrorState({ message }: { message: string }) {
 
 function LoadingState() {
   return (
-    <div className="space-y-2 p-4">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Skeleton
-          key={i}
-          className="h-16 w-full"
-        />
+    <div className="space-y-1 p-2">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <div key={i} className="flex flex-col gap-1 rounded-lg px-3 py-2">
+          <Skeleton className="h-3 w-3/4" />
+          <Skeleton className="h-2.5 w-1/2 opacity-60" />
+        </div>
       ))}
     </div>
   );
@@ -216,7 +216,7 @@ export function ThreadList({
     <div className="absolute inset-0 flex flex-col">
       {/* Header with title, filter, and close button */}
       <div className="grid flex-shrink-0 grid-cols-[1fr_auto] items-center gap-3 border-b border-border p-4">
-        <h2 className="text-lg font-semibold tracking-tight">Threads</h2>
+        <h2 className="text-xs font-normal tracking-tight text-muted-foreground">Threads</h2>
         <div className="flex items-center gap-2">
           <Select
             value={statusFilter}
@@ -319,7 +319,7 @@ export function ThreadList({
                         <div className="min-w-0 flex-1">
                           {/* Title + Timestamp Row */}
                           <div className="mb-1 flex items-center justify-between">
-                            <h3 className="truncate text-sm font-semibold">
+                            <h3 className="truncate text-xs font-normal">
                               {thread.title}
                             </h3>
                             <span className="ml-2 flex-shrink-0 text-xs text-muted-foreground">

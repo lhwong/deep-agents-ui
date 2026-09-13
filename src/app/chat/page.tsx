@@ -1,5 +1,4 @@
 "use client";
-import { signOut } from "../actions";
 
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useQueryState } from "nuqs";
@@ -7,16 +6,10 @@ import { getConfig, saveConfig, StandaloneConfig } from "@/lib/config";
 import { ConfigDialog } from "@/app/components/ConfigDialog";
 import { BrokerSettingsDialog } from "@/app/components/BrokerSettingsDialog";
 import { BillingDialog } from "@/app/components/BillingDialog";
-import { Button } from "@/components/ui/button";
 import { Assistant } from "@langchain/langgraph-sdk";
 import { ClientProvider, useClient } from "@/providers/ClientProvider";
-import { Settings, MessagesSquare, SquarePen, Building2, Wallet } from "lucide-react";
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable";
-import { ThreadList } from "@/app/components/ThreadList";
+import { Button } from "@/components/ui/button";
+import { LeftNav } from "@/app/components/LeftNav";
 import { ChatProvider } from "@/providers/ChatProvider";
 import { ChatInterface } from "@/app/components/ChatInterface";
 
@@ -34,11 +27,9 @@ function HomePageInner({
   handleSaveConfig,
 }: HomePageInnerProps) {
   const client = useClient();
-  const [threadId, setThreadId] = useQueryState("threadId");
-  const [sidebar, setSidebar] = useQueryState("sidebar");
+  const [, setThreadId] = useQueryState("threadId");
 
   const [mutateThreads, setMutateThreads] = useState<(() => void) | null>(null);
-  const [interruptCount, setInterruptCount] = useState(0);
   const [assistant, setAssistant] = useState<Assistant | null>(null);
   const [brokerDialogOpen, setBrokerDialogOpen] = useState(false);
   const [billingDialogOpen, setBillingDialogOpen] = useState(false);
@@ -50,7 +41,6 @@ function HomePageInner({
       );
 
     if (isUUID) {
-      // We should try to fetch the assistant directly with this UUID
       try {
         const data = await client.assistants.get(config.assistantId);
         setAssistant(data);
@@ -70,18 +60,14 @@ function HomePageInner({
       }
     } else {
       try {
-        // We should try to list out the assistants for this graph, and then use the default one.
-        // TODO: Paginate this search, but 100 should be enough for graph name
         const assistants = await client.assistants.search({
           graphId: config.assistantId,
           limit: 100,
         });
         const defaultAssistant = assistants.find(
-          (assistant) => assistant.metadata?.["created_by"] === "system"
+          (a) => a.metadata?.["created_by"] === "system"
         );
-        if (defaultAssistant === undefined) {
-          throw new Error("No default assistant found");
-        }
+        if (defaultAssistant === undefined) throw new Error("No default assistant found");
         setAssistant(defaultAssistant);
       } catch (error) {
         console.error(
@@ -129,118 +115,23 @@ function HomePageInner({
         onOpenChange={setBillingDialogOpen}
         deploymentUrl={config.deploymentUrl}
       />
-      <div className="flex h-screen w-full flex-col overflow-x-hidden">
-        <header className="flex h-16 items-center justify-between border-b border-border px-3 sm:px-6">
-          <div className="flex items-center gap-2 sm:gap-4">
-            <h1 className="text-xl font-semibold">Alpha</h1>
-            {!sidebar && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSidebar("1")}
-                className="rounded-md border border-border bg-card p-3 text-foreground hover:bg-accent"
-              >
-                <MessagesSquare className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Threads</span>
-                {interruptCount > 0 && (
-                  <span className="ml-2 inline-flex min-h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] text-destructive-foreground">
-                    {interruptCount}
-                  </span>
-                )}
-              </Button>
-            )}
-          </div>
-          <div className="flex items-center gap-1 sm:gap-2">
-            <div className="hidden text-sm text-muted-foreground sm:block">
-              <span className="font-medium">Assistant:</span>{" "}
-              {config.assistantId}
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setBrokerDialogOpen(true)}
-            >
-              <Building2 className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Broker</span>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setBillingDialogOpen(true)}
-            >
-              <Wallet className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Credits</span>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setConfigDialogOpen(true)}
-            >
-              <Settings className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Settings</span>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setThreadId(null)}
-              disabled={!threadId}
-              className="border-[#2F6868] bg-[#2F6868] text-white hover:bg-[#2F6868]/80"
-            >
-              <SquarePen className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">New Thread</span>
-            </Button>
-            <form action={signOut}>
-              <Button
-                variant="outline"
-                size="sm"
-                type="submit"
-              >
-                Logout
-              </Button>
-            </form>
-          </div>
-        </header>
 
-        <div className="flex-1 overflow-hidden">
-          <ResizablePanelGroup
-            direction="horizontal"
-            autoSaveId="standalone-chat"
+      <div className="flex h-screen w-full overflow-hidden">
+        <LeftNav
+          onNewThread={() => void setThreadId(null)}
+          onBroker={() => setBrokerDialogOpen(true)}
+          onCredits={() => setBillingDialogOpen(true)}
+          onSettings={() => setConfigDialogOpen(true)}
+          onMutateReady={(fn) => setMutateThreads(() => fn)}
+        />
+
+        <div className="relative flex flex-1 flex-col overflow-hidden">
+          <ChatProvider
+            activeAssistant={assistant}
+            onHistoryRevalidate={() => mutateThreads?.()}
           >
-            {sidebar && (
-              <>
-                <ResizablePanel
-                  id="thread-history"
-                  order={1}
-                  defaultSize={25}
-                  minSize={20}
-                  className="relative min-w-[380px]"
-                >
-                  <ThreadList
-                    onThreadSelect={async (id) => {
-                      await setThreadId(id);
-                    }}
-                    onMutateReady={(fn) => setMutateThreads(() => fn)}
-                    onClose={() => setSidebar(null)}
-                    onInterruptCountChange={setInterruptCount}
-                  />
-                </ResizablePanel>
-                <ResizableHandle />
-              </>
-            )}
-
-            <ResizablePanel
-              id="chat"
-              className="relative flex flex-col"
-              order={2}
-            >
-              <ChatProvider
-                activeAssistant={assistant}
-                onHistoryRevalidate={() => mutateThreads?.()}
-              >
-                <ChatInterface assistant={assistant} />
-              </ChatProvider>
-            </ResizablePanel>
-          </ResizablePanelGroup>
+            <ChatInterface assistant={assistant} />
+          </ChatProvider>
         </div>
       </div>
     </>
