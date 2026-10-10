@@ -9,6 +9,7 @@ interface ChatProviderProps {
   children: ReactNode;
   activeAssistant: Assistant | null;
   onHistoryRevalidate?: () => void;
+  onError?: (err: Error) => void;
   thread?: UseStreamThread<StateType>;
 }
 
@@ -16,9 +17,10 @@ export function ChatProvider({
   children,
   activeAssistant,
   onHistoryRevalidate,
+  onError,
   thread,
 }: ChatProviderProps) {
-  const chat = useChat({ activeAssistant, onHistoryRevalidate, thread });
+  const chat = useChat({ activeAssistant, onHistoryRevalidate, onError, thread });
   return <ChatContext.Provider value={chat}>{children}</ChatContext.Provider>;
 }
 

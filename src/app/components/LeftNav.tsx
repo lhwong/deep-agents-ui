@@ -9,6 +9,8 @@ import {
   Wallet,
   Settings,
   LogOut,
+  AlertCircle,
+  X,
 } from "lucide-react";
 
 // ── Alpha logomark ────────────────────────────────────────────────────────────
@@ -95,6 +97,8 @@ interface LeftNavProps {
   onCredits: () => void;
   onSettings: () => void;
   onMutateReady: (fn: () => void) => void;
+  streamError?: Error | null;
+  onClearError?: () => void;
 }
 
 export function LeftNav({
@@ -103,7 +107,10 @@ export function LeftNav({
   onCredits,
   onSettings,
   onMutateReady,
+  streamError,
+  onClearError,
 }: LeftNavProps) {
+  const [errorOpen, setErrorOpen] = useState(false);
   const [expanded, setExpanded] = useState<boolean>(() => {
     if (typeof window === "undefined") return true;
     try {
@@ -196,6 +203,56 @@ export function LeftNav({
         {/* ── Bottom items ── */}
         <div className="shrink-0 border-t border-border px-2 pb-3 pt-2">
           <div className="flex flex-col gap-0.5">
+            {/* Error indicator — always visible; red when an error occurred */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => streamError && setErrorOpen((v) => !v)}
+                aria-pressed={errorOpen}
+                className={cn(
+                  "flex w-full items-center rounded-lg px-2 py-2 text-sm font-medium transition-colors",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  expanded ? "gap-3 justify-start" : "justify-center",
+                  streamError
+                    ? "text-destructive hover:bg-destructive/10 cursor-pointer"
+                    : "text-muted-foreground/40 cursor-default"
+                )}
+                aria-label={streamError ? "Show last error" : "No errors"}
+              >
+                <AlertCircle size={18} className="shrink-0" />
+                {expanded && <span className="truncate">{streamError ? "Last error" : "No errors"}</span>}
+              </button>
+              {streamError && errorOpen && (
+                <div className={cn(
+                  "absolute z-50 w-72 rounded-lg border border-border bg-popover p-3 shadow-lg",
+                  expanded ? "bottom-full left-0 mb-2" : "bottom-0 left-full ml-2"
+                )}>
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-xs font-medium text-destructive">Last error</p>
+                    <button
+                      type="button"
+                      onClick={() => { setErrorOpen(false); onClearError?.(); }}
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                  <p className="mt-1.5 text-xs text-muted-foreground break-words whitespace-pre-wrap max-h-48 overflow-y-auto">
+                    {(() => {
+                      const parts: string[] = [];
+                      if (streamError.name && streamError.name !== "Error" && streamError.name !== "StreamError") {
+                        parts.push(`[${streamError.name}]`);
+                      }
+                      parts.push(streamError.message);
+                      const status = (streamError as unknown as Record<string, unknown>).status;
+                      if (status != null) parts.push(`HTTP status: ${status}`);
+                      if (streamError.cause) parts.push(`Cause: ${String(streamError.cause)}`);
+                      return parts.join("\n");
+                    })()}
+                  </p>
+                </div>
+              )}
+            </div>
             <NavItem
               icon={<Building2 size={18} />}
               label="Broker"

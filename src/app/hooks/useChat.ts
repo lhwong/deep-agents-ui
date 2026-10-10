@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useStream } from "@langchain/langgraph-sdk/react";
 import { useSession, signOut } from "next-auth/react";
 import {
@@ -30,15 +30,18 @@ export type StateType = {
 export function useChat({
   activeAssistant,
   onHistoryRevalidate,
+  onError,
   thread,
 }: {
   activeAssistant: Assistant | null;
   onHistoryRevalidate?: () => void;
+  onError?: (err: Error) => void;
   thread?: UseStreamThread<StateType>;
 }) {
   const [threadId, setThreadId] = useQueryState("threadId");
   const client = useClient();
   const { data: session } = useSession();
+  const [lastError, setLastError] = useState<Error | null>(null);
 
   const stream = useStream<StateType>({
     assistantId: activeAssistant?.assistant_id || "",
@@ -54,7 +57,10 @@ export function useChat({
       if (status === 401) {
         signOut({ callbackUrl: "/login" });
       } else {
-        console.error("[useStream] error:", err);
+        const e = err instanceof Error ? err : new Error(String(err));
+        setLastError(e);
+        onError?.(e);
+        console.error("[useStream] error:", err, JSON.stringify(err, Object.getOwnPropertyNames(err)));
       }
       onHistoryRevalidate?.();
     },
@@ -179,6 +185,8 @@ export function useChat({
     email: stream.values.email,
     ui: stream.values.ui,
     progress: stream.values.progress,
+    error: lastError,
+    clearError: () => setLastError(null),
     setFiles,
     messages: stream.messages,
     isLoading: stream.isLoading,

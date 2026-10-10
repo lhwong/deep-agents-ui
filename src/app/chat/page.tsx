@@ -33,6 +33,7 @@ function HomePageInner({
   const [assistant, setAssistant] = useState<Assistant | null>(null);
   const [brokerDialogOpen, setBrokerDialogOpen] = useState(false);
   const [billingDialogOpen, setBillingDialogOpen] = useState(false);
+  const [streamError, setStreamError] = useState<Error | null>(null);
 
   const fetchAssistant = useCallback(async () => {
     const isUUID =
@@ -123,12 +124,15 @@ function HomePageInner({
           onCredits={() => setBillingDialogOpen(true)}
           onSettings={() => setConfigDialogOpen(true)}
           onMutateReady={(fn) => setMutateThreads(() => fn)}
+          streamError={streamError}
+          onClearError={() => setStreamError(null)}
         />
 
         <div className="relative flex flex-1 flex-col overflow-hidden">
           <ChatProvider
             activeAssistant={assistant}
             onHistoryRevalidate={() => mutateThreads?.()}
+            onError={setStreamError}
           >
             <ChatInterface assistant={assistant} />
           </ChatProvider>

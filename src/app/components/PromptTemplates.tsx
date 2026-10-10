@@ -134,7 +134,36 @@ export const PROMPT_TEMPLATES: TemplateCategory[] = [
       },
     ],
   },
-  
+  {
+    category: "Strategy",
+    templates: [
+      {
+        label: "Setup + recommend + vet",
+        prompt:
+          "Set up a CSP strategy:\n- Tickers: ${tickers_to_trade}\n- Total asset: $50,000\n- DTE window: 30–45 days\n- IV Rank min: 40\n- Profit target: 50%\n- Max 1 contract per trade\n\nThen fetch my live account, generate sell-put recommendations, and run the full go/no-go vetting with risk sizing on each candidate.",
+      },
+      {
+        label: "Setup strategy only",
+        prompt:
+          "Set up a CSP strategy on ${tickers_to_trade}.\nTotal asset $50,000. Profit target 50%, max 1 contract per trade.",
+      },
+      {
+        label: "Recommend + vet (saved strategy)",
+        prompt:
+          "Give me trade recommendations using my saved strategy and run go/no-go vetting.",
+      },
+      {
+        label: "Backtest saved strategy",
+        prompt:
+          "Backtest my saved strategy from 2026-01-01 to today.",
+      },
+      {
+        label: "Setup + backtest",
+        prompt:
+          "Set up a CSP strategy:\n- Tickers: ${tickers_to_trade}\n- Total asset: $50,000\n- DTE window: 30–45 days\n- Profit target: 50%\n- Max 1 contract per trade\n\nThen backtest it from 2026-01-01 to today.",
+      },
+    ],
+  },
 ];
 
 function resolvePrompt(prompt: string, tickers: string[]): string {
