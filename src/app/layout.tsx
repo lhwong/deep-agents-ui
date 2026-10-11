@@ -2,6 +2,7 @@ import { Inter } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { Toaster } from "sonner";
 import AuthProvider from "@/providers/AuthProvider";
+import { ErrorLogger } from "@/app/components/ErrorLogger";
 import { auth } from "@/auth";
 import "./globals.css";
 
@@ -23,6 +24,7 @@ export default async function RootLayout({
         suppressHydrationWarning
       >
         <AuthProvider session={session}>
+          <ErrorLogger />
           <NuqsAdapter>{children}</NuqsAdapter>
           <Toaster />
         </AuthProvider>
